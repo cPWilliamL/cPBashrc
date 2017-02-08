@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+#setup
+test -d /root/cptechs || mkdir /root/cptechs;
+#ticket="${PS1//[^0-9]/}";
+ticket='8190517'
+if [ ! -z "$ticket" ]; then export ticket="$ticket"; mkdir /root/cptechs/"$ticket"; else >&2 printf "ticket not found in prompt\n"; fi
+
+#aliases
+
+#functions
+function cpbak () {
+	for i in "$@"; do
+		if [ -d "$i" ]; then
+			epoch="$(date +%s)"
+			tar -zcf /root/cptechs/"$ticket"/"${epoch}${i//\//_}".tar.gz "$i";
+			{ printf "%s -> " "$i"; printf "/root/cptechs/%s/" "$ticket"; printf "%s" "$epoch"; printf "%s.tar.gz\n" "${i//\//_}"; } >&2;
+		elif [ -f "$i" ]; then
+			cp -av "$i" /root/cptechs/"$ticket"/"$(date +%s)${i//\//_}";
+		fi;
+	done;
+}
+
+function cplistips () {
+	test -f /usr/local/cpanel/bin/whmapi1 || { >&2 printf "whmapi1 not found\n"; return; };
+	/usr/local/cpanel/bin/whmapi1 listips|grep -oP "(?<=public_ip: )[^ ]+";
+}
+
+function cphostname () {
+	test -f /usr/local/cpanel/bin/whmapi1 || { >&2 printf "whmapi1 not found\n"; return; };
+	/usr/local/cpanel/bin/whmapi1 gethostname|grep -oP "(?<=hostname: )[^ ]+";
+}
+
+function cpns () {
+	test -f /usr/local/cpanel/bin/whmapi1 || { >&2 printf "whmapi1 not found\n"; return; };
+	/usr/local/cpanel/bin/whmapi1 get_nameserver_config|grep -oP "(?<= - )[^ ]+";
+}
+
+function exicwd () {
+	if [ "$1" == "-a" ]; then
+		zgrep -hoP "(?<=cwd=)/[^ ]+" /var/log/exim_mainlog*|sort|uniq -c|sort -nr;
+	else
+		grep -hoP "(?<=cwd=)/[^ ]+" /var/log/exim_mainlog|sort|uniq -c|sort -nr;
+	fi
+}
+
+function exilogins () {
+	if [ "$1" == "-a" ]; then
+		zgrep -ho "A=\(.*\)\(@\|+\)\(.*\) S=" /var/log/exim_mainlog*|sed 's/ S\=//g'|sed 's/A\=\(.*\)\://g'|sed '/\(.*\)P=\(.*\)/d'|sort|uniq -c|sort -nr;
+	else
+		grep -ho "A=\(.*\)\(@\|+\)\(.*\) S=" /var/log/exim_mainlog| 's/ S\=//g'|sed 's/A\=\(.*\)\://g'|sed '/\(.*\)P=\(.*\)/d'|sort|uniq -c|sort -nr;
+	fi;
+}
+
+function vhostphp () {
+	test -f /usr/local/cpanel/bin/whmapi1 || { >&2 printf "whmapi1 not found\n"; return; };
+	if [ "$#" -eq 0 ]; then
+		/usr/local/cpanel/bin/whmapi1 php_get_vhost_versions|awk '/ +vhost:/{print $2,ver} {ver=$2}';
+	else
+		vhosts="$@";
+		/usr/local/cpanel/bin/whmapi1 php_get_vhost_versions|awk '/ +vhost:/{print $2,ver} {ver=$2}'|grep -E "${vhosts// /|}";
+	fi;
+}
