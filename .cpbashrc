@@ -2,8 +2,7 @@
 
 #setup
 test -d /root/cptechs || mkdir /root/cptechs;
-#ticket="${PS1//[^0-9]/}";
-ticket='8190517'
+ticket="${PS1//[^0-9]/}";
 if [ ! -z "$ticket" ]; then export ticket="$ticket"; mkdir /root/cptechs/"$ticket"; else >&2 printf "ticket not found in prompt\n"; fi
 
 #aliases
