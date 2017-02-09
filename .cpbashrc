@@ -5,6 +5,13 @@ test -d /root/cptechs || mkdir /root/cptechs;
 ticket="${PS1//[^0-9]/}";
 if [ ! -z "$ticket" ]; then export ticket="$ticket"; mkdir /root/cptechs/"$ticket"; else >&2 printf "ticket not found in prompt\n"; fi
 
+#colors
+ESC_SEQ="\x1b["
+COL_RESET=$ESC_SEQ"39;49;00m"
+COL_RED=$ESC_SEQ"31;01m"
+COL_GREEN=$ESC_SEQ"32;01m"
+COL_YELLOW=$ESC_SEQ"33;01m"
+
 #aliases
 
 #functions
@@ -87,11 +94,26 @@ function ipinfo () {
 
 function hosted () {
         for i in "$@"; do
-                ips="($(dig A "$i" +short @8.8.8.8))";
+                ips=($(dig A "$i" +short @8.8.8.8));
                 for ip in "${ips[@]}"; do
                         org="$(ipinfo $ip|awk '/^org: /{print$3}')";
-                        [[ "$org" =~ Cloudflare ]] && { >&2 printf "%s is behind Cloudflare\n" "$i"; return 2; };
-                        cplistips|grep -q "$ip" && { >&2 printf "%s points to this server\n" "$i" ; return 0; };
+                        [[ "$org" =~ Cloudflare ]] && {
+			>&2 printf "%b" "$COL_YELLOW";
+			>&2 printf "%s is behind Cloudflare\n" "$i";
+			>&2 printf "%b" "$COL_RESET";
+			return 2; };
+                        cplistips|grep -q "$ip";
+			if [ "$?" -eq 0 ]; then
+				>&2 printf "%b" "$COL_GREEN";
+				>&2 printf "%s points to this server\n" "$i";
+				>&2 printf "%b" "$COL_RESET";
+				return 0;
+			else
+				>&2 printf "%b" "$COL_RED";
+				>&2 printf "%s doesn't point to this server\n" "$i";
+				>&2 printf "%b" "$COL_RESET";
+				return 1;
+			fi;
                 done;
         done;
 }
