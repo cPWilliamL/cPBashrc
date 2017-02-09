@@ -95,6 +95,11 @@ function ipinfo () {
 function hosted () {
         for i in "$@"; do
                 ips=($(dig A "$i" +short @8.8.8.8));
+		[ "${#ips[@]}" -eq 0 ] && {
+		>&2 printf "%b" "$COL_YELLOW";
+		>&2 printf "%s doesn't resolve\n" "$i";
+		>&2 printf "%b" "$COL_RESET";
+		return 2; };
                 for ip in "${ips[@]}"; do
                         org="$(ipinfo $ip|awk '/^org: /{print$3}')";
                         [[ "$org" =~ Cloudflare ]] && {
