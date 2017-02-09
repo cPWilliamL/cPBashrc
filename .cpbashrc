@@ -52,7 +52,8 @@ function exilogins () {
 }
 
 function vhostphp () {
-	test -f /usr/local/cpanel/bin/whmapi1 || { >&2 printf "whmapi1 not found\n"; return; };
+	test -f /usr/local/cpanel/bin/whmapi1||{ >&2 printf "whmapi1 not found\n"; return; };
+	test -f /etc/cpanel/ea4/is_ea4||{ >&2 printf "Not EA4\n"; return; };
 	if [ "$#" -eq 0 ]; then
 		/usr/local/cpanel/bin/whmapi1 php_get_vhost_versions|awk '/ +vhost:/{print $2,ver} {ver=$2}';
 	else
