@@ -61,3 +61,10 @@ function vhostphp () {
 		/usr/local/cpanel/bin/whmapi1 php_get_vhost_versions|awk '/ +vhost:/{print $2,ver} {ver=$2}'|grep -E "${vhosts// /|}";
 	fi;
 }
+
+function cpdns () {
+	for i in "$@"; do
+		>&2 printf "%s:\n" "$i";
+		/usr/local/cpanel/3rdparty/perl/*/bin/perl -mCpanel::DnsRoots -e 'use Data::Dumper; print Dumper(Cpanel::DnsRoots->new()->get_ipv4_addresses_for_domain("@ARGV"));' "$i"|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b";
+	done;
+}
