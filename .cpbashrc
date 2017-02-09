@@ -47,7 +47,7 @@ function exilogins () {
 	if [ "$1" == "-a" ]; then
 		zgrep -ho "A=\(.*\)\(@\|+\)\(.*\) S=" /var/log/exim_mainlog*|sed 's/ S\=//g'|sed 's/A\=\(.*\)\://g'|sed '/\(.*\)P=\(.*\)/d'|sort|uniq -c|sort -nr;
 	else
-		grep -ho "A=\(.*\)\(@\|+\)\(.*\) S=" /var/log/exim_mainlog| 's/ S\=//g'|sed 's/A\=\(.*\)\://g'|sed '/\(.*\)P=\(.*\)/d'|sort|uniq -c|sort -nr;
+		grep -ho "A=\(.*\)\(@\|+\)\(.*\) S=" /var/log/exim_mainlog|sed 's/ S\=//g'|sed 's/A\=\(.*\)\://g'|sed '/\(.*\)P=\(.*\)/d'|sort|uniq -c|sort -nr;
 	fi;
 }
 
