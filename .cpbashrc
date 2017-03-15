@@ -151,6 +151,29 @@ function cpssl () {
 			fi;
 		fi;
 	}
+	function _httpd_code () {
+		if [[ "$1" =~ 200\ OK ]]; then
+			printf "%b" "$COL_GREEN";
+			printf "%s\n" "${_resp#* }";
+			printf "%b" "$COL_RESET";
+		elif [[ "$1" =~ 30.\ Moved ]]; then
+			printf "%b" "$COL_YELLOW";
+			printf "%s\n" "${_resp#* }";
+			printf "%b" "$COL_RESET";
+		elif [[ "$1" =~ Forbidden ]]; then
+			printf "%b" "$COL_RED";
+			printf "%s\n" "${_resp#* }";
+			printf "%b" "$COL_RESET";
+		elif [[ "$1" =~ Not\ Found ]]; then
+			printf "%b" "$COL_RED";
+			printf "%s\n" "${_resp#* }";
+			printf "%b" "$COL_RESET";
+		elif [ "${1:=null}" == null ]; then
+			printf "%b" "$COL_RED";
+			printf "empty response\n"
+			printf "%b" "$COL_RESET";
+		fi;
+	}
 	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
 	for ((i=0; i<${#_domains[@]}; i++)); do
 		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
@@ -177,76 +200,16 @@ function cpssl () {
 		printf "%s " "$_uri";
 		_resolve;
 		_resp="$(curl -sI -A "$_agent" "${_domains[$i]}/$_uri"|head -1)";
-		if [[ "$_resp" =~ 200\ OK ]]; then
-			printf "%b" "$COL_GREEN";
-			printf "%s\n" "${_resp#* }";
-			printf "%b" "$COL_RESET";
-		elif [[ "$_resp" =~ 30.\ Moved ]]; then
-			printf "%b" "$COL_YELLOW";
-			printf "%s\n" "${_resp#* }";
-			printf "%b" "$COL_RESET";
-		elif [[ "$_resp" =~ Forbidden ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp#* }";
-			printf "%b" "$COL_RESET";
-		elif [[ "$_resp" =~ Not\ Found ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp#* }";
-			printf "%b" "$COL_RESET";
-		elif [ "${_resp:=null}" == null ]; then
-			printf "%b" "$COL_RED";
-			printf "empty response\n"
-			printf "%b" "$COL_RESET";
-		fi;
+		_httpd_code "$_resp";
 		printf "%s/" "www.${_domains[$i]}";
                 printf "%s: " "$_uri";
 		_resolve;
 		_resp_www="$(curl -sI -A "$_agent" "www.${_domains[$i]}/$_uri"|head -1)";
-		if [[ "$_resp_www" =~ 200\ OK ]]; then
-			printf "%b" "$COL_GREEN";
-			printf "%s\n" "${_resp_www#* }";
-			printf "%b" "$COL_RESET";
-		elif [[ "$_resp_www" =~ 30.\ Moved ]]; then
-			printf "%b" "$COL_YELLOW";
-			printf "%s\n" "${_resp_www#* }";
-			printf "%b" "$COL_RESET";
-		elif [[ "$_resp_www" =~ Forbidden ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp#* }";
-			printf "%b" "$COL_RESET";
-		elif [[ "$_resp_www" =~ Not\ Found ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp_www#* }";
-			printf "%b" "$COL_RESET";
-		elif [ "${_resp_www:=null}" == null ]; then
-			printf "%b" "$COL_RED";
-			printf "empty response\n"
-			printf "%b" "$COL_RESET";
-		fi;
+		_httpd_code "$_resp_www";
 		printf "%s/" "mail.${_domains[$i]}";
 		printf "%s: " "$_uri";
 		_resolve;
 		_resp_mail="$(curl -sI -A "$_agent" "mail.${_domains[$i]}/$_uri"|head -1)";
-                if [[ "$_resp_mail" =~ 200\ OK ]]; then
-                        printf "%b" "$COL_GREEN";
-                        printf "%s\n" "${_resp_mail#* }";
-                        printf "%b" "$COL_RESET";
-                elif [[ "$_resp_mail" =~ 30.\ Moved ]]; then
-                        printf "%b" "$COL_YELLOW";
-                        printf "%s\n" "${_resp_mail#* }";
-                        printf "%b" "$COL_RESET";
-		elif [[ "$_resp_mail" =~ Forbidden ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp#* }";
-			printf "%b" "$COL_RESET";
-                elif [[ "$_resp_mail" =~ Not\ Found ]]; then
-                        printf "%b" "$COL_RED";
-                        printf "%s\n" "${_resp_mail#* }";
-                        printf "%b" "$COL_RESET";
-                elif [ "${_resp_mail:=null}" == null ]; then
-                        printf "%b" "$COL_RED";
-                        printf "empty response\n"
-                        printf "%b" "$COL_RESET";
-                fi;
+		_httpd_code "$_resp_mail";
 	done;
 }
