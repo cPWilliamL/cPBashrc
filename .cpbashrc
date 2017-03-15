@@ -152,7 +152,7 @@ function cpssl () {
 		fi;
 	}
 	function _httpd_code () {
-		read _code;
+		_code="$1";
 		if [[ "$_code" =~ 200\ OK ]]; then
 			printf "%b" "$COL_GREEN";
 			printf "%s\n" "${_code#* }";
