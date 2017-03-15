@@ -152,25 +152,30 @@ function cpssl () {
 		fi;
 	}
 	function _httpd_code () {
-		if [[ "$1" =~ 200\ OK ]]; then
+		read _code;
+		if [[ "$_code" =~ 200\ OK ]]; then
 			printf "%b" "$COL_GREEN";
-			printf "%s\n" "${_resp#* }";
+			printf "%s\n" "${_code#* }";
 			printf "%b" "$COL_RESET";
-		elif [[ "$1" =~ 30.\ Moved ]]; then
+		elif [[ "$_code" =~ 30.\ Moved ]]; then
 			printf "%b" "$COL_YELLOW";
-			printf "%s\n" "${_resp#* }";
+			printf "%s\n" "${_code#* }";
 			printf "%b" "$COL_RESET";
-		elif [[ "$1" =~ Forbidden ]]; then
+		elif [[ "$_code" =~ Forbidden ]]; then
 			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp#* }";
+			printf "%s\n" "${_code#* }";
 			printf "%b" "$COL_RESET";
-		elif [[ "$1" =~ Not\ Found ]]; then
+		elif [[ "$_code" =~ Not\ Found ]]; then
 			printf "%b" "$COL_RED";
-			printf "%s\n" "${_resp#* }";
+			printf "%s\n" "${_code#* }";
 			printf "%b" "$COL_RESET";
-		elif [ "${1:=null}" == null ]; then
+		elif [ "${_code:=null}" == null ]; then
 			printf "%b" "$COL_RED";
-			printf "empty response\n"
+			printf "empty response\n";
+			printf "%b" "$COL_RESET";
+		else 
+			printf "%b" "$COL_RED";
+			printf "%s\n" "${_code#* }";
 			printf "%b" "$COL_RESET";
 		fi;
 	}
