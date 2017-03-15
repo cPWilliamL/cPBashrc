@@ -182,6 +182,10 @@ function cpssl () {
 			printf "%b" "$COL_YELLOW";
 			printf "%s\n" "${_resp#* }";
 			printf "%b" "$COL_RESET";
+		elif [[ "$_resp" =~ Forbidden ]]; then
+			printf "%b" "$COL_RED";
+			printf "%s\n" "${_resp#* }";
+			printf "%b" "$COL_RESET";
 		elif [[ "$_resp" =~ Not\ Found ]]; then
 			printf "%b" "$COL_RED";
 			printf "%s\n" "${_resp#* }";
@@ -201,6 +205,10 @@ function cpssl () {
 		elif [[ "$_resp_www" =~ 30.\ Moved ]]; then
 			printf "%b" "$COL_YELLOW";
 			printf "%s\n" "${_resp_www#* }";
+			printf "%b" "$COL_RESET";
+		elif [[ "$_resp" =~ Forbidden ]]; then
+			printf "%b" "$COL_RED";
+			printf "%s\n" "${_resp#* }";
 			printf "%b" "$COL_RESET";
 		elif [[ "$_resp_www" =~ Not\ Found ]]; then
 			printf "%b" "$COL_RED";
@@ -222,6 +230,10 @@ function cpssl () {
                         printf "%b" "$COL_YELLOW";
                         printf "%s\n" "${_resp_mail#* }";
                         printf "%b" "$COL_RESET";
+		elif [[ "$_resp" =~ Forbidden ]]; then
+			printf "%b" "$COL_RED";
+			printf "%s\n" "${_resp#* }";
+			printf "%b" "$COL_RESET";
                 elif [[ "$_resp_mail" =~ Not\ Found ]]; then
                         printf "%b" "$COL_RED";
                         printf "%s\n" "${_resp_mail#* }";
