@@ -154,29 +154,17 @@ function cpssl () {
 	function _httpd_code () {
 		_code="$1";
 		if [[ "$_code" =~ 200\ OK ]]; then
-			printf "%b" "$COL_GREEN";
-			printf "%s\n" "${_code#* }";
-			printf "%b" "$COL_RESET";
+			printf "%b" "$COL_GREEN"; printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
 		elif [[ "$_code" =~ 30.\ Moved ]]; then
-			printf "%b" "$COL_YELLOW";
-			printf "%s\n" "${_code#* }";
-			printf "%b" "$COL_RESET";
+			printf "%b" "$COL_YELLOW"; printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
 		elif [[ "$_code" =~ Forbidden ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_code#* }";
-			printf "%b" "$COL_RESET";
+			printf "%b" "$COL_RED";	printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
 		elif [[ "$_code" =~ Not\ Found ]]; then
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_code#* }";
-			printf "%b" "$COL_RESET";
+			printf "%b" "$COL_RED";	printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
 		elif [ "${_code:=null}" == null ]; then
-			printf "%b" "$COL_RED";
-			printf "empty response\n";
-			printf "%b" "$COL_RESET";
+			printf "%b" "$COL_RED";	printf "empty response\n"; printf "%b" "$COL_RESET";
 		else 
-			printf "%b" "$COL_RED";
-			printf "%s\n" "${_code#* }";
-			printf "%b" "$COL_RESET";
+			printf "%b" "$COL_RED";	printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
 		fi;
 	}
 	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
