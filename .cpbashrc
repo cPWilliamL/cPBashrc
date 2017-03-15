@@ -178,7 +178,7 @@ function cpssl () {
 			printf "%b" "$COL_GREEN";
 			printf "%s\n" "${_resp#* }";
 			printf "%b" "$COL_RESET";
-		elif [[ "$_resp" =~ 301\ Moved ]]; then
+		elif [[ "$_resp" =~ 30.\ Moved ]]; then
 			printf "%b" "$COL_YELLOW";
 			printf "%s\n" "${_resp#* }";
 			printf "%b" "$COL_RESET";
@@ -198,7 +198,7 @@ function cpssl () {
 			printf "%b" "$COL_GREEN";
 			printf "%s\n" "${_resp_www#* }";
 			printf "%b" "$COL_RESET";
-		elif [[ "$_resp_www" =~ 301\ Moved ]]; then
+		elif [[ "$_resp_www" =~ 30.\ Moved ]]; then
 			printf "%b" "$COL_YELLOW";
 			printf "%s\n" "${_resp_www#* }";
 			printf "%b" "$COL_RESET";
@@ -218,7 +218,7 @@ function cpssl () {
                         printf "%b" "$COL_GREEN";
                         printf "%s\n" "${_resp_mail#* }";
                         printf "%b" "$COL_RESET";
-                elif [[ "$_resp_mail" =~ 301\ Moved ]]; then
+                elif [[ "$_resp_mail" =~ 30.\ Moved ]]; then
                         printf "%b" "$COL_YELLOW";
                         printf "%s\n" "${_resp_mail#* }";
                         printf "%b" "$COL_RESET";
