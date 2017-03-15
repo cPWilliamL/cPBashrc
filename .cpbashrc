@@ -137,7 +137,7 @@ function cpssl () {
 			printf "%b" "$COL_RESET";
 		else
 			for _ip in "${_resolv[@]}"; do
-				if [[ "${_ips[@]}" =~ \ "$_ip"\  ]]; then
+				if [[ "${_ips[@]}" =~ "$_ip" ]]; then
 					local _resolve_res='1';
 					printf "%b" "$COL_GREEN";
 					printf "(local %s): " "$_ip";
