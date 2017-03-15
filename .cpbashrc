@@ -129,6 +129,28 @@ function cpssl () {
 	_orders=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="order_item_id": ")[^"]+'));
 	_request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'|sed 's/T/ /; s/Z//'));
 	_ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP "(?<=public_ip: )[^ ]+"));
+	function _resolve () {
+		_resolv=($(dig A "${_domains[$i]}" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
+		if [ "${#_resolv[@]}" -eq 0 ]; then
+			printf "%b" "$COL_RED";
+			printf "(does not resolve): ";
+			printf "%b" "$COL_RESET";
+		else
+			for _ip in "${_resolv[@]}"; do
+				if [[ "${_ips[@]}" =~ \ "$_ip"\  ]]; then
+					local _resolve_res='1';
+					printf "%b" "$COL_GREEN";
+					printf "(local %s): " "$_ip";
+					printf "%b" "$COL_RESET";
+				fi;
+			done;
+			if [ "${_resolve_res:=null}" == null ]; then
+				printf "%b" "$COL_RED";
+				printf "(remote %s): " "$_ip";
+				printf "%b" "$COL_RESET";
+			fi;
+		fi;
+	}
 	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
 	for ((i=0; i<${#_domains[@]}; i++)); do
 		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
@@ -153,26 +175,7 @@ function cpssl () {
 		_uri="$(find $_doc -maxdepth 1 -type f -regextype posix-extended -regex ".*[0-9A-Fa-f]{32}.txt" -printf '%T+ ' -exec basename '{}' \;|sort -r|awk 'NR==1{print$2}')";
 		printf "%s/" "${_domains[$i]}";
 		printf "%s " "$_uri";
-		_resolv=($(dig A "${_domains[$i]}" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
-		if [ "${#_resolv[@]}" -eq 0 ]; then
-			printf "%b" "$COL_RED";
-			printf "(does not resolve): ";
-			printf "%b" "$COL_RESET";
-		else
-			for _ip in "${_resolv[@]}"; do
-				if [[ "${_ips[@]}" =~ \ "$_ip"\  ]]; then
-					local _resolve_res='1';
-					printf "%b" "$COL_GREEN";
-					printf "(local %s): " "$_ip";
-					printf "%b" "$COL_RESET";
-				fi;
-			done;
-			if [ "${_resolve_res:=null}" == null ]; then
-				printf "%b" "$COL_RED";
-				printf "(remote %s): " "$_ip";
-				printf "%b" "$COL_RESET";
-			fi;
-		fi;
+		_resolve;
 		_resp="$(curl -sI -A "$_agent" "${_domains[$i]}/$_uri"|head -1)";
 		if [[ "$_resp" =~ 200\ OK ]]; then
 			printf "%b" "$COL_GREEN";
@@ -197,6 +200,7 @@ function cpssl () {
 		fi;
 		printf "%s/" "www.${_domains[$i]}";
                 printf "%s: " "$_uri";
+		_resolve;
 		_resp_www="$(curl -sI -A "$_agent" "www.${_domains[$i]}/$_uri"|head -1)";
 		if [[ "$_resp_www" =~ 200\ OK ]]; then
 			printf "%b" "$COL_GREEN";
@@ -221,6 +225,7 @@ function cpssl () {
 		fi;
 		printf "%s/" "mail.${_domains[$i]}";
 		printf "%s: " "$_uri";
+		_resolve;
 		_resp_mail="$(curl -sI -A "$_agent" "mail.${_domains[$i]}/$_uri"|head -1)";
                 if [[ "$_resp_mail" =~ 200\ OK ]]; then
                         printf "%b" "$COL_GREEN";
