@@ -154,18 +154,23 @@ function cpssl () {
 	function _httpd_code () {
 		_code="$1";
 		if [ "$_code" -eq 200 ]; then
-			_pass="$((pass+1))"; 
 			printf "%b" "$COL_GREEN"; printf "%s OK\n" "${_code#* }"; printf "%b" "$COL_RESET";
+			return 0;
 		elif [ "$_code" -eq 301 ]||[ "$_code" -eq 302 ]; then
 			printf "%b" "$COL_YELLOW"; printf "%s Moved\n" "${_code#* }"; printf "%b" "$COL_RESET";
+			return 1;
 		elif [ "$_code" -eq 403 ]; then
 			printf "%b" "$COL_RED";	printf "%s Forbidden\n" "${_code#* }"; printf "%b" "$COL_RESET";
+			return 1;
 		elif [ "$_code" -eq 404 ]; then
 			printf "%b" "$COL_RED";	printf "%s Not Found\n" "${_code#* }"; printf "%b" "$COL_RESET";
+			return 1;
 		elif [ "${_code:=null}" == null ]; then
 			printf "%b" "$COL_RED";	printf "empty response\n"; printf "%b" "$COL_RESET";
-		else 
+			return 1;
+		else
 			printf "%b" "$COL_RED";	printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
+			return 1;
 		fi;
 	}
 	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
@@ -194,12 +199,15 @@ function cpssl () {
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
 			else
 				_pass='0';
-				_pass="$((pass+1))";
+				_pass="$((_pass+1))";
 				printf "%s " "$_uri: ";
 			fi;
 			_resolve;
 			_resp="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp";
+			if [ "$?" -eq 0 ]; then
+				_pass="$((_pass+1))";
+			fi;
 			printf "%s/" "www.${_domains[$i]}";
 			if [ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]; then
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
@@ -209,6 +217,9 @@ function cpssl () {
 			_resolve;
 			_resp_www="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "www.${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp_www";
+			if [ "$?" -eq 0 ]; then
+				_pass="$((_pass+1))";
+			fi;
 			printf "%s/" "mail.${_domains[$i]}";
 			if [ "${_uri:=null}" == null ]; then
 				_uri='abcdef0123456789ABCDEF0123456789.txt';
@@ -219,6 +230,9 @@ function cpssl () {
 			_resolve;
 			_resp_mail="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "mail.${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp_mail";
+			if [ "$?" -eq 0 ]; then
+				_pass="$((_pass+1))";
+			fi;
 			if [ "$_pass" -eq 4 ]; then
 				_ready+=("${_domains[$i]}::${_orders[$i]}");
 			fi;
@@ -232,4 +246,5 @@ function cpssl () {
 	for ((i=0; i<${#_expired[@]}; i++)); do
 		printf "%s\n" "${_expired[$i]}"|sed 's/::/ /';
 	done;
+	printf "\n";
 }
