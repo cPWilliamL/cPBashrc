@@ -176,7 +176,7 @@ function cpssl () {
 		_curepoch="$(date +%s)";
 		_diffhr="$(((_curepoch-_reqepoch)/3600))";
 		if [ "$_diffhr" -ge 168 ]; then
-			_expired+=("${_domains[$i]}");
+			_expired+=("${_domains[$i]}::${_orders[$i]}");
 			printf "%b" "$COL_RED";	printf "Expired: %s days\n" "$((_diffhr/24))"; printf "%b" "$COL_RESET";
 		elif [ "$_diffhr" -ge 144 ]; then
 			printf "%b" "$COL_YELLOW"; printf "Expires in: %s days\n" "$((_diffhr/24))"; printf "%b" "$COL_RESET";
@@ -220,8 +220,16 @@ function cpssl () {
 			_resp_mail="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "mail.${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp_mail";
 			if [ "$_pass" -eq 4 ]; then
-				_ready+=("${_domains[$i]}");
+				_ready+=("${_domains[$i]}::${_orders[$i]}");
 			fi;
 		fi;
+	done;
+	printf "\n# Domains ready to restart DCV check:\n######################################\n";
+	for ((i=0; i<${#_ready[@]}; i++)); do
+		printf "%s\n" "${_ready[$i]}"|sed 's/::/ /';
+	done;
+	printf "\n# Expired requests that need removal:\n######################################\n";
+	for ((i=0; i<${#_expired[@]}; i++)); do
+		printf "%s\n" "${_expired[$i]}"|sed 's/::/ /';
 	done;
 }
