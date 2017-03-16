@@ -208,6 +208,7 @@ function cpssl () {
 			if [ "$?" -eq 0 ]; then
 				_pass="$((_pass+1))";
 			fi;
+			#### www checks start here
 			printf "%s/" "www.${_domains[$i]}";
 			if [ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]; then
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
@@ -220,6 +221,26 @@ function cpssl () {
 			if [ "$?" -eq 0 ]; then
 				_pass="$((_pass+1))";
 			fi;
+			if [ -f "$_doc"/.htaccess ]; then
+				printf "%s/.htaccess: iThemes:" "$_doc";
+				grep -qi "Begin.*iThemes" "$_doc"/.htaccess;
+				if [ "$?" -eq 0 ]; then
+					printf "%b" "$COL_RED";	printf "Yes "; printf "%b" "$COL_RESET";
+				else
+					printf "%b" "$COL_GREEN"; printf "No "; printf "%b" "$COL_RESET";
+				fi;
+				printf "AllinOneWPSecurity:";
+				grep -qi "BEGIN All In One WP Security" "$_doc"/.htaccess;
+				if [ "$?" -eq 0 ]; then
+					printf "%b" "$COL_RED";	printf "Yes\n"; printf "%b" "$COL_RESET";
+				else
+					printf "%b" "$COL_GREEN"; printf "No\n"; printf "%b" "$COL_RESET";
+				fi;
+				awk '/comodo/{print "Line:",NR,"\t",$0;exit}' "$_doc"/.htaccess;
+			else
+				printf "No such file or directory\n"
+			fi;
+			#### mail checks start here
 			printf "%s/" "mail.${_domains[$i]}";
 			if [ "${_uri:=null}" == null ]; then
 				_uri='abcdef0123456789ABCDEF0123456789.txt';
