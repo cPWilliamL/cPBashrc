@@ -221,6 +221,17 @@ function cpssl () {
 			if [ "$?" -eq 0 ]; then
 				_pass="$((_pass+1))";
 			fi;
+			#### mail checks start here
+			printf "%s/" "mail.${_domains[$i]}";
+			if [ "${_uri:=null}" == null ]; then
+				_uri='abcdef0123456789ABCDEF0123456789.txt';
+				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
+			else
+				printf "%s " "$_uri: ";
+			fi;
+			_resolve;
+			_resp_mail="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "mail.${_domains[$i]}/$_uri")";
+			_httpd_code "$_resp_mail";
 			if [ -f "$_doc"/.htaccess ]; then
 				printf "%s/.htaccess: iThemes:" "$_doc";
 				grep -qi "Begin.*iThemes" "$_doc"/.htaccess;
@@ -240,17 +251,6 @@ function cpssl () {
 			else
 				printf "No such file or directory\n"
 			fi;
-			#### mail checks start here
-			printf "%s/" "mail.${_domains[$i]}";
-			if [ "${_uri:=null}" == null ]; then
-				_uri='abcdef0123456789ABCDEF0123456789.txt';
-				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
-			else
-				printf "%s " "$_uri: ";
-			fi;
-			_resolve;
-			_resp_mail="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "mail.${_domains[$i]}/$_uri")";
-			_httpd_code "$_resp_mail";
 			if [ "$?" -eq 0 ]; then
 				_pass="$((_pass+1))";
 			fi;
