@@ -179,14 +179,23 @@ function cpssl () {
 		printf "order: %s, " "${_orders[$i]}";
 		_reqepoch="$(date -d "${_request[$i]}" +%s)";
 		_curepoch="$(date +%s)";
-		_diffhr="$(((_curepoch-_reqepoch)/3600))";
+		_diff="$((_curepoch-_reqepoch))";
+		_diff_hr="$((_curepoch-_reqepoch/3600))";
+		_count_day="$((_diff/3600/24))";
+		_count_hr="$((_diff/3600%24))";		
 		if [ "$_diffhr" -ge 168 ]; then
 			_expired+=("${_domains[$i]}::${_orders[$i]}");
-			printf "%b" "$COL_RED";	printf "Expired: %s days\n" "$((_diffhr/24))"; printf "%b" "$COL_RESET";
+			printf "Expired:%b" "$COL_RED";
+			printf " %s days" "$_count_hr"; printf " %s hrs..." "$_count_hr";
+			printf "%b" "$COL_RESET";
 		elif [ "$_diffhr" -ge 144 ]; then
-			printf "%b" "$COL_YELLOW"; printf "Expires in: %s days\n" "$((_diffhr/24))"; printf "%b" "$COL_RESET";
+			printf "Expires in:%b" "$COL_YELLOW";
+			printf " %s days" "$_count_hr"; printf " %s hrs..." "$_count_hr";
+			printf "%b" "$COL_RESET";
 		else
-			printf "%b" "$COL_GREEN"; printf "Expires in: %s days\n" "$((_diffhr/24))"; printf "%b" "$COL_RESET";
+			printf "Expires in:%b" "$COL_GREEN";
+			printf " %s days" "$_count_hr"; printf " %s hrs..." "$_count_hr";
+			printf "%b" "$COL_RESET";
 		fi;
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]})";
 		if [ "${_doc:=null}" == null ]; then
