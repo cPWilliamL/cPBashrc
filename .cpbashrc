@@ -223,8 +223,7 @@ function cpssl () {
 			fi;
 			#### mail checks start here
 			printf "%s/" "mail.${_domains[$i]}";
-			if [ "${_uri:=null}" == null ]; then
-				_uri='abcdef0123456789ABCDEF0123456789.txt';
+			if [ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]; then
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
 			else
 				printf "%s " "$_uri: ";
@@ -267,5 +266,6 @@ function cpssl () {
 	for ((i=0; i<${#_expired[@]}; i++)); do
 		printf "%s\n" "${_expired[$i]}"|sed 's/::/ /';
 	done;
+	unset _expired _ready;
 	printf "\n";
 }
