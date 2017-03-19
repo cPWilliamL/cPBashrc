@@ -127,7 +127,7 @@ function cpssl () {
 	_vendor="$(python -m json.tool /var/cpanel/autossl.json|grep -oP '(?<="provider": ")[^"]+')";
 	_domains=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json |grep -oP '(?<=").+\..+(?=")'));
 	_orders=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="order_item_id": ")[^"]+'));
-	_request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'|sed 's/T/ /; s/Z//'));
+	_request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'));
 	_ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP "(?<=public_ip: )[^ ]+"));
 	function _resolve () {
 		_resolv=($(dig A "${_domains[$i]}" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
@@ -177,7 +177,7 @@ function cpssl () {
 	for ((i=0; i<${#_domains[@]}; i++)); do
 		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
 		printf "order: %s, " "${_orders[$i]}";
-		_reqepoch="$(date -u -d "${_request[$i]}" +%s)";
+		_reqepoch="$(date -u -d "${_request[$i]//[^0-9:-]/ }" +%s)";
 		_curepoch="$(date -u +%s)";
 		_expepoch="$((_reqepoch+604800))";
 		_count="$((_expepoch-_curepoch))";
