@@ -186,15 +186,15 @@ function cpssl () {
 		if [ "$_count" -lt 86400 ]; then
 			_expired+=("${_domains[$i]}::${_orders[$i]}");
 			printf "Expired:%b" "$COL_RED";
-			printf " %s days" "$_count_hr"; printf " %s hrs...\n" "$_count_hr";
+			printf " %s days" "$_count_day"; printf " %s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		elif [ "$_count" -lt 172800 ]; then
 			printf "Expires in:%b" "$COL_YELLOW";
-			printf " %s days" "$_count_hr"; printf " %s hrs...\n" "$_count_hr";
+			printf " %s days" "$_count_day"; printf " %s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		else
 			printf "Expires in:%b" "$COL_GREEN";
-			printf " %s days" "$_count_hr"; printf " %s hrs...\n" "$_count_hr";
+			printf " %s days" "$_count_day"; printf " %s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		fi;
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]})";
