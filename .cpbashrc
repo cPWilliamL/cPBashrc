@@ -125,10 +125,10 @@ function hosted () {
 
 function cpssl () {
 	_vendor="$(python -m json.tool /var/cpanel/autossl.json|grep -oP '(?<="provider": ")[^"]+')";
-	_domains=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json |grep -oP '(?<=").+\..+(?=")'));
+	_domains=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<=").+\..+(?=")'));
 	_orders=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="order_item_id": ")[^"]+'));
 	_request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'));
-	_ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP "(?<=public_ip: )[^ ]+"));
+	_ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP '(?<=public_ip: )[^ ]+'));
 	function _resolve () {
 		_resolv=($(dig A "${_domains[$i]}" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
 		if [ "${#_resolv[@]}" -eq 0 ]; then
@@ -136,15 +136,17 @@ function cpssl () {
 			printf "(does not resolve): ";
 			printf "%b" "$COL_RESET";
 		else
+			_local_ip='0';
 			for _ip in "${_resolv[@]}"; do
 				if [[ "${_ips[@]}" =~ "$_ip" ]]; then
-					local _resolve_res='1';
+					_local_ip='1';
 					printf "%b" "$COL_GREEN";
 					printf "(local %s): " "$_ip";
 					printf "%b" "$COL_RESET";
+					break;
 				fi;
 			done;
-			if [ "${_resolve_res:=null}" == null ]; then
+			if [ "${_local_ip:=null}" == null ]; then
 				printf "%b" "$COL_RED";
 				printf "(remote %s): " "$_ip";
 				printf "%b" "$COL_RESET";
@@ -185,15 +187,16 @@ function cpssl () {
 		_count_hr="$((_diff/3600%24))";
 		if [ "$_count" -lt 0 ]; then
 			_expired+=("${_domains[$i]}::${_orders[$i]}");
-			printf "%bExpired!\n" "$COL_RED";
+			printf "%bExpired on " "$COL_RED";
+			printf "%s" "$(date -u -d @$_expepoch)";
 			printf "%b" "$COL_RESET";
 		elif [ "$_count" -lt 172800 ]; then
-			printf "Expires in:%b" "$COL_YELLOW";
-			printf " %s days" "$_count_day"; printf " %s hrs...\n" "$_count_hr";
+			printf "Expires in:%b " "$COL_YELLOW";
+			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		else
-			printf "Expires in:%b" "$COL_GREEN";
-			printf " %s days" "$_count_day"; printf " %s hrs...\n" "$_count_hr";
+			printf "Expires in:%b " "$COL_GREEN";
+			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		fi;
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]})";
@@ -201,12 +204,12 @@ function cpssl () {
 			printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
 		else
 			_uri="$(find $_doc -maxdepth 1 -type f -regextype posix-extended -regex ".*[0-9A-Fa-f]{32}.txt" -printf '%T+ ' -exec basename '{}' \;|sort -r|awk 'NR==1{print$2}')";
+			_pass='0';
 			printf "%s/" "${_domains[$i]}";
 			if [ "${_uri:=null}" == null ]; then
 				_uri='abcdef0123456789ABCDEF0123456789.txt';
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
 			else
-				_pass='0';
 				_pass="$((_pass+1))";
 				printf "%s " "$_uri: ";
 			fi;
@@ -239,6 +242,9 @@ function cpssl () {
 			_resolve;
 			_resp_mail="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "mail.${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp_mail";
+			if [ "$?" -eq 0 ]; then
+				_pass="$((_pass+1))";
+			fi;
 			if [ -f "$_doc"/.htaccess ]; then
 				printf "%s/.htaccess: iThemes:" "$_doc";
 				grep -qi "Begin.*iThemes" "$_doc"/.htaccess;
@@ -257,9 +263,6 @@ function cpssl () {
 				awk '/comodo/{print "Line:",NR,"\t",$0;exit}' "$_doc"/.htaccess;
 			else
 				printf "No such file or directory\n"
-			fi;
-			if [ "$?" -eq 0 ]; then
-				_pass="$((_pass+1))";
 			fi;
 			if [ "$_pass" -eq 4 ]; then
 				_ready+=("${_domains[$i]}::${_orders[$i]}");
