@@ -186,8 +186,8 @@ function cpssl () {
 		_curepoch="$(date -u +%s)";
 		_expepoch="$((_reqepoch+604800))";
 		_count="$((_expepoch-_curepoch))";
-		_count_day="$((_diff/3600/24))";
-		_count_hr="$((_diff/3600%24))";
+		_count_day="$((_count/3600/24))";
+		_count_hr="$((_count/3600%24))";
 		if [ "$_count" -lt 0 ]; then
 			_expired+=("${_domains[$i]}::${_orders[$i]}");
 			printf "%bExpired on " "$COL_RED";
