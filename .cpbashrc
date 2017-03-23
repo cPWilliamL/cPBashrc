@@ -265,7 +265,7 @@ function cpssl () {
 				fi;
 				awk '/comodo/{print "Line:",NR,"\t",$0;exit}' "$_doc"/.htaccess;
 			else
-				printf "No such file or directory\n"
+				printf "%s/.htaccess: No such file or directory\n" "$_doc";
 			fi;
 			if [ "$_pass" -eq 4 ]; then
 				_ready+=("${_domains[$i]}::${_orders[$i]}");
