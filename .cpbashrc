@@ -152,6 +152,7 @@ function cpssl () {
 				printf "%b" "$COL_RESET";
 			fi;
 		fi;
+		unset _resolv;
 	}
 	function _httpd_code () {
 		_code="$1";
@@ -174,6 +175,7 @@ function cpssl () {
 			printf "%b" "$COL_RED";	printf "%s\n" "${_code#* }"; printf "%b" "$COL_RESET";
 			return 1;
 		fi;
+		unset _code;
 	}
 	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
 	for ((i=0; i<${#_domains[@]}; i++)); do
