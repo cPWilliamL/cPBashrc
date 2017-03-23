@@ -191,7 +191,7 @@ function cpssl () {
 		if [ "$_count" -lt 0 ]; then
 			_expired+=("${_domains[$i]}::${_orders[$i]}");
 			printf "%bExpired on " "$COL_RED";
-			printf "%s" "$(date -u -d @$_expepoch)";
+			printf "%s\n" "$(date -u -d @$_expepoch)";
 			printf "%b" "$COL_RESET";
 		elif [ "$_count" -lt 172800 ]; then
 			printf "Expires in:%b " "$COL_YELLOW";
