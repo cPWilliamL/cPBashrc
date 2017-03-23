@@ -202,6 +202,7 @@ function cpssl () {
 			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		fi;
+		unset _reqepoch _curepoch _expepoch _count _count_day _count_hr;
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]})";
 		if [ "${_doc:=null}" == null ]; then
 			printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
