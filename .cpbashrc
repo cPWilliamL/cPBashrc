@@ -203,7 +203,7 @@ function cpssl () {
 		fi;
 		unset _date _reqepoch _curepoch _expepoch _count _count_day _count_hr;
 	}
-	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
+	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV';fi;
 	for ((i=0; i<${#_domains[@]}; i++)); do
 		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
 		printf "order: %s, " "${_orders[$i]}";
