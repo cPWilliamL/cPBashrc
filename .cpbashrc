@@ -178,18 +178,17 @@ function cpssl () {
 		fi;
 		unset _code;
 	}
-	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
-	for ((i=0; i<${#_domains[@]}; i++)); do
-		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
-		printf "order: %s, " "${_orders[$i]}";
-		_reqepoch="$(date -u -d "${_request[$i]//[^0-9:-]/ }" +%s)";
+	function _expire () {
+		_date="$@";
+		_reqepoch="$(date -u -d "$_date" +%s)";
 		_curepoch="$(date -u +%s)";
 		_expepoch="$((_reqepoch+604800))";
 		_count="$((_expepoch-_curepoch))";
 		_count_day="$((_count/3600/24))";
 		_count_hr="$((_count/3600%24))";
 		if [ "$_count" -lt 0 ]; then
-			_expired+=("${_domains[$i]}::${_orders[$i]}");
+			
+			d+=("${_domains[$i]}::${_orders[$i]}");
 			printf "%bExpired on " "$COL_RED";
 			printf "%s\n" "$(date -u -d @$_expepoch)";
 			printf "%b" "$COL_RESET";
@@ -202,7 +201,13 @@ function cpssl () {
 			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
 		fi;
-		unset _reqepoch _curepoch _expepoch _count _count_day _count_hr;
+		unset _date _reqepoch _curepoch _expepoch _count _count_day _count_hr;
+	}
+	if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV'; else _agent='letsencrypt';fi;
+	for ((i=0; i<${#_domains[@]}; i++)); do
+		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
+		printf "order: %s, " "${_orders[$i]}";
+		_expire "${_request[$i]//[^0-9:-]/ }";
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]})";
 		if [ "${_doc:=null}" == null ]; then
 			printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
