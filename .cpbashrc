@@ -208,7 +208,7 @@ function cpssl () {
 		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
 		printf "order: %s, " "${_orders[$i]}";
 		_expire "${_request[$i]//[^0-9:-]/ }";
-		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]})";
+		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]} 2>/dev/null)";
 		if [ "${_doc:=null}" == null ]; then
 			printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
 		else
