@@ -145,13 +145,12 @@ function cpssl () {
 					printf "(local %s): " "$_ip";
 					printf "%b" "$COL_RESET";
 					break;
+				else
+					printf "%b" "$COL_RED";
+					printf "(remote %s): " "$_ip";
+					printf "%b" "$COL_RESET";
 				fi;
 			done;
-			if [ "${_local_ip:=null}" == null ]; then
-				printf "%b" "$COL_RED";
-				printf "(remote %s): " "$_ip";
-				printf "%b" "$COL_RESET";
-			fi;
 		fi;
 		unset _resolv _alias;
 	}
