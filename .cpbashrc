@@ -152,6 +152,7 @@ function cpssl () {
 					printf "%b" "$COL_RED";
 					printf "(remote %s): " "$_ip";
 					printf "%b" "$COL_RESET";
+					break;
 				fi;
 			done;
 		fi;
