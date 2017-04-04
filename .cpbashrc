@@ -190,14 +190,17 @@ function cpssl () {
 			printf "%bExpired on " "$COL_RED";
 			printf "%s\n" "$(date -u -d @$_expepoch)";
 			printf "%b" "$COL_RESET";
+			return 1;
 		elif [[ "$_count" -lt 172800 ]]; then
 			printf "Expires in:%b " "$COL_YELLOW";
 			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
+			return 0;
 		else
 			printf "Expires in:%b " "$COL_GREEN";
 			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
+			return 0;
 		fi;
 		unset _date _reqepoch _curepoch _expepoch _count _count_day _count_hr;
 	}
@@ -205,13 +208,14 @@ function cpssl () {
 	for ((i=0; i<${#_domains[@]}; i++)); do
 		printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
 		printf "order: %s, " "${_orders[$i]}";
+		_pass='0';
 		_expire "${_request[$i]//[^0-9:-]/ }";
+		[[ "$?" -eq 0 ]] && _pass="$((_pass+1))";
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]} 2>/dev/null)";
 		if [[ "${_doc:=null}" == null ]]; then
 			printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
 		else
 			_uri="$(find $_doc -maxdepth 1 -type f -regextype posix-extended -regex ".*[0-9A-Fa-f]{32}.txt" -printf '%T+ ' -exec basename '{}' \;|sort -r|awk 'NR==1{print$2}')";
-			_pass='0';
 			printf "%s/" "${_domains[$i]}";
 			if [[ "${_uri:=null}" == null ]]; then
 				_uri='abcdef0123456789ABCDEF0123456789.txt';
@@ -271,7 +275,7 @@ function cpssl () {
 			else
 				printf "%s/.htaccess: No such file or directory\n" "$_doc";
 			fi;
-			if [[ "$_pass" -eq 4 ]]; then
+			if [[ "$_pass" -eq 5 ]]; then
 				_ready+=("${_domains[$i]}::${_orders[$i]}");
 			fi;
 		fi;
