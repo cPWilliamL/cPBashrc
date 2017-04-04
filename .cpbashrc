@@ -129,7 +129,7 @@ function cpssl () {
 	_orders=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="order_item_id": ")[^"]+'));
 	_request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'));
 	IFS=',';
-	_csr=($(python -m json.tool test_ssl.json |grep -oP '(?<=csr": ")[^"]+'|sed 's/\\n/\n/g; s/END CERTIFICATE REQUEST-----/END CERTIFICATE REQUEST-----,/g'));
+	_csr=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<=csr": ")[^"]+'|sed 's/\\n/\n/g; s/END CERTIFICATE REQUEST-----/END CERTIFICATE REQUEST-----,/g'));
 	IFS=$'\n';
 	_ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP '(?<=public_ip: )[^ ]+'));
 	function _resolve () {
