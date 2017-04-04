@@ -132,7 +132,7 @@ function cpssl () {
 	function _resolve () {
 		_alias="$1";
 		_resolv=($(dig A "$_alias${_domains[$i]}" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
-		if [ "${#_resolv[@]}" -eq 0 ]; then
+		if [[ "${#_resolv[@]}" -eq 0 ]]; then
 			printf "%b" "$COL_RED";
 			printf "(does not resolve): ";
 			printf "%b" "$COL_RESET";
@@ -156,19 +156,19 @@ function cpssl () {
 	}
 	function _httpd_code () {
 		_code="$1";
-		if [ "$_code" -eq 200 ]; then
+		if [[ "$_code" -eq 200 ]]; then
 			printf "%b" "$COL_GREEN"; printf "%s OK\n" "${_code#* }"; printf "%b" "$COL_RESET";
 			return 0;
-		elif [ "$_code" -eq 301 ]||[ "$_code" -eq 302 ]; then
+		elif [[ "$_code" -eq 301 ]]||[[ "$_code" -eq 302 ]]; then
 			printf "%b" "$COL_YELLOW"; printf "%s Moved\n" "${_code#* }"; printf "%b" "$COL_RESET";
 			return 1;
-		elif [ "$_code" -eq 403 ]; then
+		elif [[ "$_code" -eq 403 ]]; then
 			printf "%b" "$COL_RED";	printf "%s Forbidden\n" "${_code#* }"; printf "%b" "$COL_RESET";
 			return 1;
-		elif [ "$_code" -eq 404 ]; then
+		elif [[ "$_code" -eq 404 ]]; then
 			printf "%b" "$COL_RED";	printf "%s Not Found\n" "${_code#* }"; printf "%b" "$COL_RESET";
 			return 1;
-		elif [ "${_code:=null}" == null ]; then
+		elif [[ "${_code:=null}" == null ]]; then
 			printf "%b" "$COL_RED";	printf "empty response\n"; printf "%b" "$COL_RESET";
 			return 1;
 		else
@@ -185,12 +185,12 @@ function cpssl () {
 		_count="$((_expepoch-_curepoch))";
 		_count_day="$((_count/3600/24))";
 		_count_hr="$((_count/3600%24))";
-		if [ "$_count" -lt 0 ]; then
+		if [[ "$_count" -lt 0 ]]; then
 			_expired+=("${_domains[$i]}::${_orders[$i]}");
 			printf "%bExpired on " "$COL_RED";
 			printf "%s\n" "$(date -u -d @$_expepoch)";
 			printf "%b" "$COL_RESET";
-		elif [ "$_count" -lt 172800 ]; then
+		elif [[ "$_count" -lt 172800 ]]; then
 			printf "Expires in:%b " "$COL_YELLOW";
 			printf "%s days " "$_count_day"; printf "%s hrs...\n" "$_count_hr";
 			printf "%b" "$COL_RESET";
@@ -207,13 +207,13 @@ function cpssl () {
 		printf "order: %s, " "${_orders[$i]}";
 		_expire "${_request[$i]//[^0-9:-]/ }";
 		_doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]} 2>/dev/null)";
-		if [ "${_doc:=null}" == null ]; then
+		if [[ "${_doc:=null}" == null ]]; then
 			printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
 		else
 			_uri="$(find $_doc -maxdepth 1 -type f -regextype posix-extended -regex ".*[0-9A-Fa-f]{32}.txt" -printf '%T+ ' -exec basename '{}' \;|sort -r|awk 'NR==1{print$2}')";
 			_pass='0';
 			printf "%s/" "${_domains[$i]}";
-			if [ "${_uri:=null}" == null ]; then
+			if [[ "${_uri:=null}" == null ]]; then
 				_uri='abcdef0123456789ABCDEF0123456789.txt';
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
 			else
@@ -223,12 +223,12 @@ function cpssl () {
 			_resolve;
 			_resp="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp";
-			if [ "$?" -eq 0 ]; then
+			if [[ "$?" -eq 0 ]]; then
 				_pass="$((_pass+1))";
 			fi;
 			#### www checks start here
 			printf "%s/" "www.${_domains[$i]}";
-			if [ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]; then
+			if [[ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]]; then
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
 			else
 			        printf "%s: " "$_uri";
@@ -236,12 +236,12 @@ function cpssl () {
 			_resolve 'www.';
 			_resp_www="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "www.${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp_www";
-			if [ "$?" -eq 0 ]; then
+			if [[ "$?" -eq 0 ]]; then
 				_pass="$((_pass+1))";
 			fi;
 			#### mail checks start here
 			printf "%s/" "mail.${_domains[$i]}";
-			if [ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]; then
+			if [[ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]]; then
 				printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
 			else
 				printf "%s " "$_uri: ";
@@ -249,20 +249,20 @@ function cpssl () {
 			_resolve 'mail.';
 			_resp_mail="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "mail.${_domains[$i]}/$_uri")";
 			_httpd_code "$_resp_mail";
-			if [ "$?" -eq 0 ]; then
+			if [[ "$?" -eq 0 ]]; then
 				_pass="$((_pass+1))";
 			fi;
-			if [ -f "$_doc"/.htaccess ]; then
+			if [[ -f "$_doc"/.htaccess ]]; then
 				printf "%s/.htaccess: iThemes:" "$_doc";
 				grep -qi "Begin.*iThemes" "$_doc"/.htaccess;
-				if [ "$?" -eq 0 ]; then
+				if [[ "$?" -eq 0 ]]; then
 					printf "%b" "$COL_RED";	printf "Yes "; printf "%b" "$COL_RESET";
 				else
 					printf "%b" "$COL_GREEN"; printf "No "; printf "%b" "$COL_RESET";
 				fi;
 				printf "AllinOneWPSecurity:";
 				grep -qi "BEGIN All In One WP Security" "$_doc"/.htaccess;
-				if [ "$?" -eq 0 ]; then
+				if [[ "$?" -eq 0 ]]; then
 					printf "%b" "$COL_RED";	printf "Yes\n"; printf "%b" "$COL_RESET";
 				else
 					printf "%b" "$COL_GREEN"; printf "No\n"; printf "%b" "$COL_RESET";
@@ -271,7 +271,7 @@ function cpssl () {
 			else
 				printf "%s/.htaccess: No such file or directory\n" "$_doc";
 			fi;
-			if [ "$_pass" -eq 4 ]; then
+			if [[ "$_pass" -eq 4 ]]; then
 				_ready+=("${_domains[$i]}::${_orders[$i]}");
 			fi;
 		fi;
