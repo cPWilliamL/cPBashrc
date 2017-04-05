@@ -80,6 +80,8 @@ function cpdns () {
 
 function cpfpm () {
   local i;
+  local j;
+  local d;
   for i in /opt/cpanel/ea-php*; do
     find "$i" -path \*fpm.d\*.conf|\
     while read j; do
@@ -98,6 +100,7 @@ function ipinfo () {
 
 function hosted () {
   local i;
+  local ip;
   for i in "$@"; do
     ips=($(dig A "$i" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
     [ "${#ips[@]}" -eq 0 ] && {
@@ -105,7 +108,6 @@ function hosted () {
     >&2 printf "%s doesn't resolve\n" "$i";
     >&2 printf "%b" "$COL_RESET";
     return 2; };
-    local ip;
     for ip in "${ips[@]}"; do
       org="$(ipinfo $ip|awk '/^org: /{print$3}')";
       [[ "$org" =~ Cloudflare ]] && {
@@ -130,17 +132,67 @@ function hosted () {
 };
 
 function cpssl () {
-  _vendor="$(python -m json.tool /var/cpanel/autossl.json|grep -oP '(?<="provider": ")[^"]+')";
-  _domains=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<=").+\..+(?=")'));
-  _orders=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="order_item_id": ")[^"]+'));
-  _request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'));
-  IFS=',';
-  _csr=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<=csr": ")[^"]+'|sed 's/\\n/\n/g; s/END CERTIFICATE REQUEST-----/END CERTIFICATE REQUEST-----,/g'));
-  IFS=$'\n';
-  _ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP '(?<=public_ip: )[^ ]+'));
+  function _halp () {
+    >&2 printf "Usage: cpssl [options]...\n";
+    >&2 printf "Provides tools and infomration about the AutoSSL queue.\n\n";
+    >&2 printf "If no option is provided, a check will be performed against all orders in the queue\n";
+    >&2 printf -- "  -c\t count orders in the queue\n";
+    >&2 printf -- "  -d\t list domains from queue(excludes domains in SAN)\n";
+    >&2 printf -- "  -D\t list domains from queue(includes domains in SAN)\n";
+    >&2 printf -- "  -e\t list expired order id's\n";
+    >&2 printf -- "  -E\t list expired order domains\n";
+    >&2 printf -- "  -g\t check domains against Google Safe Browsing\n";
+    >&2 printf -- "  -h\t prints this help statement\n";
+    >&2 printf -- "  -o\t list order id's in queue\n";
+    >&2 printf -- "  -p\t show AutoSSL provider\n";
+    >&2 printf -- "  -r\t provide remote command for external request check\n\n";
+  }
+  function _menu () {
+    if [[ "$#" -eq 0 ]]; then _main; else local OPTIND='1'; fi;
+    while getopts "cdDeghopr" opt; do
+      case "$opt" in
+        c)
+          python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -coP '(?<="order_item_id": ")[^"]+';
+          ;;
+        d)
+          _args+='d';
+          ;;
+        D)_args+='D';
+          ;;
+        e)
+          _args+='e';
+          ;;
+        E)
+          _args+='E';
+          ;;
+        g)
+          echo gsb;
+          ;;
+        h)
+          _halp; 
+          ;;
+        o)
+          _args+='o';
+          ;;
+        p)
+          python -m json.tool /var/cpanel/autossl.json|grep -oP '(?<="provider": ")[^"]+'; 
+          ;;
+        r)
+          echo remote requests
+          ;;
+        \?)
+          >&2 printf -- "Invalid option: %s" "$OPTARG";
+          ;;
+      esac
+    done;
+  };
+#  function _trap () {
+#    unset _agent _code _count _count_day _count_hr _csr _curepoch _date _doc _domains _expepoch _host _ips _local_ip _orders _pass _pass_max _reqepoch _request _resolv _resp _san _uri _vendor;
+#  };
+#  function _list () { }
   function _resolve () {
     local _host="$1";
-    _resolv=($(dig A "$_host" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
+    local _resolv=($(dig A "$_host" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
     if [[ "${#_resolv[@]}" -eq 0 ]]; then
       printf "%b" "$COL_RED";
       printf "(does not resolve): ";
@@ -165,7 +217,7 @@ function cpssl () {
   unset _resolv _host;
   };
   function _httpd_code () {
-    _code="$1";
+    local _code="$1";
     if [[ "$_code" -eq 200 ]]; then
       printf "%b" "$COL_GREEN"; printf "%s OK\n" "${_code#* }"; printf "%b" "$COL_RESET";
       return 0;
@@ -188,13 +240,13 @@ function cpssl () {
     unset _code;
   };
   function _expire () {
-    _date="$@";
-    _reqepoch="$(date -u -d "$_date" +%s)";
-    _curepoch="$(date -u +%s)";
-    _expepoch="$((_reqepoch+604800))";
-    _count="$((_expepoch-_curepoch))";
-    _count_day="$((_count/3600/24))";
-    _count_hr="$((_count/3600%24))";
+    local _date="$@";
+    local _reqepoch="$(date -u -d "$_date" +%s)";
+    local _curepoch="$(date -u +%s)";
+    local _expepoch="$((_reqepoch+604800))";
+    local _count="$((_expepoch-_curepoch))";
+    local _count_day="$((_count/3600/24))";
+    local _count_hr="$((_count/3600%24))";
     if [[ "$_count" -lt 0 ]]; then
       _expired+=("${_domains[$i]}::${_orders[$i]}");
       printf "%bExpired on " "$COL_RED";
@@ -214,72 +266,84 @@ function cpssl () {
     fi;
     unset _date _reqepoch _curepoch _expepoch _count _count_day _count_hr;
   };
-  if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV';fi;
-  for ((i=0; i<${#_domains[@]}; i++)); do
-    printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
-    printf "order: %s, " "${_orders[$i]}";
-    _pass='0';
-    _expire "${_request[$i]//[^0-9:-]/ }";
-    [[ "$?" -eq 0 ]] && _pass="$((_pass+1))";
-    _doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]} 2>/dev/null)";
-    if [[ "${_doc:=null}" == null ]]; then
-      printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
-    else
-      _uri="$(find $_doc -maxdepth 1 -type f -regextype posix-extended -regex ".*[0-9A-Fa-f]{32}.txt" -printf '%T+ ' -exec basename '{}' \;|sort -r|awk 'NR==1{print$2}')";
-      if [[ "${_uri:=null}" == null ]]; then
-        _uri='abcdef0123456789ABCDEF0123456789.txt';
-      else 
-        _pass="$((_pass+1))";
-      fi;
-      _san=($(printf "%s" "${_csr[$i]}"|openssl req -noout -text|grep -oP '(?<=DNS:)[^, ]+'));
-      for ((d=0; d<${#_san[@]}; d++)); do
-        _pass_max="$((${#_san[@]}+1))";
-        printf "%s/" "${_san[$d]}";
-        if [[ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]]; then
-          printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
-        else
-          printf "%s " "$_uri: ";
-        fi;
-        _resolve "${_san[$d]}";
-        _resp="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "${_san[$d]}/$_uri")";
-        _httpd_code "$_resp";
-        if [[ "$?" -eq 0 ]]; then
+  function _main () {
+    _vendor="$(python -m json.tool /var/cpanel/autossl.json|grep -oP '(?<="provider": ")[^"]+')";
+    _domains=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<=").+\..+(?=")'));
+    _orders=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="order_item_id": ")[^"]+'));
+    _request=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<="request_time": ")[^"]+'));
+    IFS=',';
+    _csr=($(python -m json.tool < /var/cpanel/autossl_queue_cpanel.json|grep -oP '(?<=csr": ")[^"]+'|sed 's/\\n/\n/g; s/END CERTIFICATE REQUEST-----/END CERTIFICATE REQUEST-----,/g'));
+    IFS=$'\n';
+    _ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP '(?<=public_ip: )[^ ]+'));
+    if [[ "$_vendor" =~ cPanel ]]; then _agent='COMODO DCV';fi;
+    for ((i=0; i<${#_domains[@]}; i++)); do
+      printf -- "--------------------\nchecking %s, " "${_domains[$i]}";
+      printf "order: %s, " "${_orders[$i]}";
+      _pass='0';
+      _expire "${_request[$i]//[^0-9:-]/ }";
+      [[ "$?" -eq 0 ]] && _pass="$((_pass+1))";
+      _doc="$(grep -oP '(?<=^documentroot: )[^ ]+' /var/cpanel/userdata/*/${_domains[$i]} 2>/dev/null)";
+      if [[ "${_doc:=null}" == null ]]; then
+        printf "%b" "$COL_RED"; printf "Domain missing in userdata, removed?\n"; printf "%b" "$COL_RESET";
+      else
+        _uri="$(find $_doc -maxdepth 1 -type f -regextype posix-extended -regex ".*[0-9A-Fa-f]{32}.txt" -printf '%T+ ' -exec basename '{}' \;|sort -r|awk 'NR==1{print$2}')";
+        if [[ "${_uri:=null}" == null ]]; then
+          _uri='abcdef0123456789ABCDEF0123456789.txt';
+        else 
           _pass="$((_pass+1))";
         fi;
-      done;
-      if [[ "$_pass" -eq "$_pass_max" ]]; then
-        _ready+=("${_domains[$i]}::${_orders[$i]}");
-      fi;
-      unset _san _pass _pass_max;
-      if [[ -f "$_doc"/.htaccess ]]; then
-        printf "%s/.htaccess: iThemes:" "$_doc";
-        grep -qi "Begin.*iThemes" "$_doc"/.htaccess;
-        if [[ "$?" -eq 0 ]]; then
-          printf "%b" "$COL_RED";	printf "Yes "; printf "%b" "$COL_RESET";
-        else
-          printf "%b" "$COL_GREEN"; printf "No "; printf "%b" "$COL_RESET";
+        _san=($(printf "%s" "${_csr[$i]}"|openssl req -noout -text|grep -oP '(?<=DNS:)[^, ]+'));
+        for ((d=0; d<${#_san[@]}; d++)); do
+          _pass_max="$((${#_san[@]}+1))";
+          printf "%s/" "${_san[$d]}";
+          if [[ "$_uri" == abcdef0123456789ABCDEF0123456789.txt ]]; then
+            printf "%b" "$COL_RED"; printf "DCV file not found: "; printf "%b" "$COL_RESET";
+          else
+            printf "%s " "$_uri: ";
+          fi;
+          _resolve "${_san[$d]}";
+          _resp="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "${_san[$d]}/$_uri")";
+          _httpd_code "$_resp";
+          if [[ "$?" -eq 0 ]]; then
+            _pass="$((_pass+1))";
+          fi;
+        done;
+        if [[ "$_pass" -eq "$_pass_max" ]]; then
+          _ready+=("${_domains[$i]}::${_orders[$i]}");
         fi;
-        printf "AllinOneWPSecurity:";
-        grep -qi "BEGIN All In One WP Security" "$_doc"/.htaccess;
-        if [[ "$?" -eq 0 ]]; then
-          printf "%b" "$COL_RED"; printf "Yes\n"; printf "%b" "$COL_RESET";
+        unset _san _pass _pass_max;
+        if [[ -f "$_doc"/.htaccess ]]; then
+          printf "%s/.htaccess: iThemes:" "$_doc";
+          grep -qi "Begin.*iThemes" "$_doc"/.htaccess;
+          if [[ "$?" -eq 0 ]]; then
+            printf "%b" "$COL_RED";	printf "Yes "; printf "%b" "$COL_RESET";
+          else
+            printf "%b" "$COL_GREEN"; printf "No "; printf "%b" "$COL_RESET";
+          fi;
+          printf "AllinOneWPSecurity:";
+          grep -qi "BEGIN All In One WP Security" "$_doc"/.htaccess;
+          if [[ "$?" -eq 0 ]]; then
+            printf "%b" "$COL_RED"; printf "Yes\n"; printf "%b" "$COL_RESET";
+          else
+            printf "%b" "$COL_GREEN"; printf "No\n"; printf "%b" "$COL_RESET";
+          fi;
+          awk '/comodo/{print "Line:",NR,"\t",$0;exit}' "$_doc"/.htaccess;
         else
-          printf "%b" "$COL_GREEN"; printf "No\n"; printf "%b" "$COL_RESET";
+          printf "%s/.htaccess: No such file or directory\n" "$_doc";
         fi;
-        awk '/comodo/{print "Line:",NR,"\t",$0;exit}' "$_doc"/.htaccess;
-      else
-        printf "%s/.htaccess: No such file or directory\n" "$_doc";
       fi;
-    fi;
-  done;
-  printf "\n# Domains ready to restart DCV check:\n######################################\n";
-  for ((i=0; i<${#_ready[@]}; i++)); do
-    printf "%s\n" "${_ready[$i]}"|sed 's/::/ /';
-  done;
-  printf "\n# Expired requests that need removal:\n######################################\n";
-  for ((i=0; i<${#_expired[@]}; i++)); do
-    printf "%s\n" "${_expired[$i]}"|sed 's/::/ /';
-  done;
-  unset _expired _ready;
-  printf "\n";
+    done;
+    printf "\n# Domains ready to restart DCV check:\n######################################\n";
+    for ((i=0; i<${#_ready[@]}; i++)); do
+      printf "%s\n" "${_ready[$i]}"|sed 's/::/ /';
+    done;
+    printf "\n# Expired requests that need removal:\n######################################\n";
+    for ((i=0; i<${#_expired[@]}; i++)); do
+      printf "%s\n" "${_expired[$i]}"|sed 's/::/ /';
+    done;
+    unset _expired _ready;
+    printf "\n";
+  };
+  _menu "$@";
+  unset _halp _menu _trap _list _resolve _httpd_code _expire _main;
 };
