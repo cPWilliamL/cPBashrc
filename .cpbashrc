@@ -16,6 +16,7 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 
 #functions
 function cpbak () {
+  local i;
   for i in "$@"; do
     if [ -d "$i" ]; then
       epoch="$(date +%s)"
@@ -70,6 +71,7 @@ function vhostphp () {
 };
 
 function cpdns () {
+  local i;
   for i in "$@"; do
     >&2 printf "%s:\n" "$i";
     /usr/local/cpanel/3rdparty/perl/*/bin/perl -mCpanel::DnsRoots -e 'use Data::Dumper; print Dumper(Cpanel::DnsRoots->new()->get_ipv4_addresses_for_domain("@ARGV"));' "$i"|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b";
@@ -77,6 +79,7 @@ function cpdns () {
 };
 
 function cpfpm () {
+  local i;
   for i in /opt/cpanel/ea-php*; do
     find "$i" -path \*fpm.d\*.conf|\
     while read j; do
@@ -87,12 +90,14 @@ function cpfpm () {
 };
 
 function ipinfo () {
+  local i;
   for i in "$@"; do
     curl -s ipinfo.io/"$i"|sed -E '/^[{}]/d; s/([,"]*|^[ ]+)//g';
   done;
 };
 
 function hosted () {
+  local i;
   for i in "$@"; do
     ips=($(dig A "$i" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
     [ "${#ips[@]}" -eq 0 ] && {
@@ -100,6 +105,7 @@ function hosted () {
     >&2 printf "%s doesn't resolve\n" "$i";
     >&2 printf "%b" "$COL_RESET";
     return 2; };
+    local ip;
     for ip in "${ips[@]}"; do
       org="$(ipinfo $ip|awk '/^org: /{print$3}')";
       [[ "$org" =~ Cloudflare ]] && {
@@ -133,7 +139,7 @@ function cpssl () {
   IFS=$'\n';
   _ips=($(/usr/local/cpanel/bin/whmapi1 listips|grep -oP '(?<=public_ip: )[^ ]+'));
   function _resolve () {
-    _host="$1";
+    local _host="$1";
     _resolv=($(dig A "$_host" +short @8.8.8.8|grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"));
     if [[ "${#_resolv[@]}" -eq 0 ]]; then
       printf "%b" "$COL_RED";
