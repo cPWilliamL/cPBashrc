@@ -16,16 +16,86 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 
 #functions
 function cpbak () {
-  local i;
-  for i in "$@"; do
-    if [ -d "$i" ]; then
-      epoch="$(date +%s)"
-      tar -zcf /root/cptechs/"$ticket"/"${epoch}${i//\//_}".tar.gz "$i";
-      { printf "%s -> " "$i"; printf "/root/cptechs/%s/" "$ticket"; printf "%s" "$epoch"; printf "%s.tar.gz\n" "${i//\//_}"; } >&2;
-    elif [ -f "$i" ]; then
-      cp -av "$i" /root/cptechs/"$ticket"/"$(date +%s)${i//\//_}";
-    fi;
-  done;
+  function _halp() {
+    printf "Usage: cpbak [-bdhr] file\nIf no option is provided the default option is to backup\n\n";
+    printf "  -b\tbackup file(s)\n";
+    printf "  -d\tdiff file from backup\n";
+    printf "  -h\tprint help\n";
+    printf "  -r\trestore file from backup\n\n";
+  };
+  if [[ "$#" -eq 0 ]]; then
+    _halp; 
+  elif [[ "$@" =~ ^-[bdhr]{2} ]]; then
+    printf "Multipe flags not supported!\n";
+  elif [[ "$@" =~ ^-b ]] || ! [[ "$@" =~ ^-[bdhr] ]]; then
+    local i _list;
+    _list="$@";
+    for i in "${_list#* }"; do
+      if [ -d "$i" ]; then
+        epoch="$(date +%s)"
+        tar -zcf /root/cptechs/"$ticket"/"${epoch}${i//\//_}".tar.gz "$i";
+        { printf "%s -> " "$i"; printf "/root/cptechs/%s/" "$ticket"; printf "%s" "$epoch"; printf "%s.tar.gz\n" "${i//\//_}"; } >&2;
+      elif [ -f "$i" ]; then
+        \cp -av "$i" /root/cptechs/"$ticket"/"$(date +%s)${i//\//_}";
+      fi;
+    done;
+  elif [[ "$@" =~ ^-d ]] && [[ "$#" -ge 2 ]]; then
+    local _files _list _ans i e a;
+    for a in "$@";do
+      _list+=($a);
+    done;
+    for ((i=1; i<${#_list[@]}; i++)); do 
+      if [[ -f "${_list[$i]}" ]]; then
+        _files+=($(find /root/cptechs/${ticket} -regextype posix-extended -regex ".*/1[0-9]{7,}${_list[$i]//\//_}"));
+        if [[ "${#_files[@]}" -eq 0 ]]; then
+          printf "No backups found for %s\n" "${_list[$i]}";
+        elif [[ "${#_files[@]}" -gt 5 ]]; then
+          printf "Too many backup files found for %s\n" "${_list[$i]}";
+        else
+          for ((e=0; e<${#_files[@]}; e++)); do
+            printf "%s) " "$e"; printf "%s\n" "${_files[$e]}";
+          done;
+          printf "\nPlease select a backup: ";
+          read _ans;
+          printf "\n";
+          diff -u "${_list[$i]}" "${_files[$_ans]}";
+          printf "\n";
+        fi;
+        unset _files;
+      else
+        printf "Sorry, you can't diff direcotry backups: %s\n" "${_list[$i]}";
+      fi;
+    done;
+  elif [[ "$@" =~ ^-h ]]; then
+    _halp;
+  elif [[ "$@" =~ ^-r ]] && [[ "$#" -ge 2 ]]; then
+    local _files _list _ans i e a;
+    for a in "$@";do
+      _list+=($a);
+    done;
+    for ((i=1; i<${#_list[@]}; i++)); do
+      if [[ -f "${_list[$i]}" ]]; then
+        _files+=($(find /root/cptechs/${ticket} -regextype posix-extended -regex ".*/1[0-9]{7,}${_list[$i]//\//_}"));
+        if [[ "${#_files[@]}" -eq 0 ]]; then
+          printf "No backups found for %s\n" "${_list[$i]}";
+        elif [[ "${#_files[@]}" -gt 5 ]]; then
+          printf "Too many backup files found for %s\n" "${_list[$i]}";
+        else
+          for ((e=0; e<${#_files[@]}; e++)); do
+            printf "%s) " "$e"; printf "%s\n" "${_files[$e]}";
+          done;
+          printf "\nPlease select a backup: ";
+          read _ans;
+          printf "Overwriting %s " "${_list[$i]}"; printf "with %s\n" "${_files[$_ans]}";
+          cat "${_files[$_ans]}" > "${_list[$i]}";
+        fi;
+        unset _files;
+      else
+        printf "Sorry, directories are unsupported for restoration: %s\n" "${_list[$i]}";
+      fi;
+    done;
+  fi;
+  unset _halp _files _list _ans i e a;
 };
 
 function cplistips () {
