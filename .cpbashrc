@@ -28,15 +28,18 @@ function cpbak () {
   elif [[ "$@" =~ ^-[bdhr]{2} ]]; then
     printf "Multipe flags not supported!\n";
   elif [[ "$@" =~ ^-b ]] || ! [[ "$@" =~ ^-[bdhr] ]]; then
-    local i _list;
-    _list="$@";
-    for i in "${_list#* }"; do
-      if [ -d "$i" ]; then
+    local a i _list;
+    for a in "$@"; do
+      _list+=($a);
+    done;
+    for ((i=0; i<${#_list[@]}; i++)); do
+      [[ "${_list[$i]}" =~ ^-b ]] && shift;
+      if [ -d "${_list[$i]}" ]; then
         epoch="$(date +%s)"
-        tar -zcf /root/cptechs/"$ticket"/"${epoch}${i//\//_}".tar.gz "$i";
-        { printf "%s -> " "$i"; printf "/root/cptechs/%s/" "$ticket"; printf "%s" "$epoch"; printf "%s.tar.gz\n" "${i//\//_}"; } >&2;
-      elif [ -f "$i" ]; then
-        \cp -av "$i" /root/cptechs/"$ticket"/"$(date +%s)${i//\//_}";
+        tar -zcf /root/cptechs/"$ticket"/"${epoch}${_list[$i]//\//_}".tar.gz "${_list[$i]}";
+        { printf "%s -> " "${_list[$i]}"; printf "/root/cptechs/%s/" "$ticket"; printf "%s" "$epoch"; printf "%s.tar.gz\n" "${_list[$i]//\//_}"; } >&2;
+      elif [ -f "${_list[$i]}" ]; then
+        \cp -av "${_list[$i]}" /root/cptechs/"$ticket"/"$(date +%s)${_list[$i]//\//_}";
       fi;
     done;
   elif [[ "$@" =~ ^-d ]] && [[ "$#" -ge 2 ]]; then
