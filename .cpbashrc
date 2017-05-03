@@ -78,23 +78,27 @@ function cpbak () {
     done;
     for ((i=1; i<${#_list[@]}; i++)); do
       if [[ -f "${_list[$i]}" ]]; then
-        _files+=($(find /root/cptechs/${ticket} -regextype posix-extended -regex ".*/1[0-9]{7,}${_list[$i]//\//_}"));
+        _files+=($(find /root/cptechs/"${ticket}" -regextype posix-extended -regex ".*/1[0-9]{7,}${_list[$i]//\//_}"));
         if [[ "${#_files[@]}" -eq 0 ]]; then
           printf "No backups found for %s\n" "${_list[$i]}";
         elif [[ "${#_files[@]}" -gt 5 ]]; then
           printf "Too many backup files found for %s\n" "${_list[$i]}";
         else
+          printf "Current: %s\n" "${_list[$i]}";
           for ((e=0; e<${#_files[@]}; e++)); do
             printf "%s) " "$e"; printf "%s\n" "${_files[$e]}";
           done;
           printf "\nPlease select a backup: ";
           read _ans;
-          printf "Overwriting %s " "${_list[$i]}"; printf "with %s\n" "${_files[$_ans]}";
-          cat "${_files[$_ans]}" > "${_list[$i]}";
+          if [[ -f "${_files[$_ans]}" ]]; then
+            printf "Overwriting %s " "${_list[$i]}"; printf "with %s\n" "${_files[$_ans]}";
+            cat "${_files[$_ans]}" > "${_list[$i]}";
+          else
+            printf "Invalid option! %s\n" "${_files[$_ans]}";
         fi;
         unset _files;
       else
-        printf "Sorry, directories are unsupported for restoration: %s\n" "${_list[$i]}";
+        printf "Sorry, directories are not supported for restoration: %s\n" "${_list[$i]}";
       fi;
     done;
   fi;
