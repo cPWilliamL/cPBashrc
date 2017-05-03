@@ -95,6 +95,7 @@ function cpbak () {
             cat "${_files[$_ans]}" > "${_list[$i]}";
           else
             printf "Invalid option! %s\n" "${_files[$_ans]}";
+          fi;
         fi;
         unset _files;
       else
