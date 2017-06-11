@@ -15,6 +15,17 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 #aliases
 
 #functions
+function lst () {
+  local i;
+  for i in "$@"; do
+    for each in ${i//\// }; do
+      full+="/$each";
+      \ls -lahd "$full";
+    done;
+    unset full each;
+  done;
+}
+
 function cpbak () {
   function _halp() {
     printf "Usage: cpbak [-bdhr] file\nIf no option is provided the default option is to backup\n\n";
