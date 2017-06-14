@@ -15,6 +15,60 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 #aliases
 
 #functions
+function phpinfo () {
+  if [[ "$#" -eq 0 ]]; then
+    cwd="$(pwd)";
+    if [[ "$cwd" =~ ^/home.?/.+ ]]; then
+      _user="$(awk -F'/' '{print$3}' <<<"$cwd")";
+      if [ ! -f "$cwd"/phpinfo.php ]; then
+        printf 'Creating %s/phpinfo.php... ' "$cwd";
+        printf '<?php phpinfo(); ?>\n' >> "$cwd"/phpinfo.php;
+        printf "chown'ing... ";
+        chown "$_user". "$cwd"/phpinfo.php;
+        printf "Done: %s/phpinfo.php\n" "$cwd";
+      else
+        printf "%s/phpinfo.php already exists!\n" "$cwd";
+        \ls -lah "$cwd"/phpinfo.php;
+      fi;
+    else
+      printf "CWD doesn't appear valid: %s\n" "$cwd";
+    fi;
+    unset cwd _user;
+  elif [[ "$#" -eq 1 ]]; then
+    if [[ "$1" == -p ]]; then
+      printf '<?php phpinfo(); ?>\n';
+    fi;
+  elif  [[ "$#" -gt 1 ]]; then
+    if [[ "$1" == -d ]]; then
+      local dom;
+      for dom in "${@:2}"; do
+        if [[ "$dom" =~ .+\..+ ]]; then
+          doc="$(awk -F':' -v var=${dom} '$1==var{split($2,path,"=="); print path[5]}' /etc/userdatadomains)";
+          _user="$(awk -F'[: =]' -v var="$dom" '$1==var{print$3}' /etc/userdatadomains)";
+          if [[ ! "${doc:=null}" == null ]]; then
+            if [ ! -f "$doc"/phpinfo.php ]; then
+              printf 'Creating %s/phpinfo.php... ' "$doc";
+              printf '<?php phpinfo(); ?>\n' >> "$doc"/phpinfo.php;
+              printf "chown'ing... ";
+              chown "$_user". "$doc"/phpinfo.php;
+              printf "Done: %s/phpinfo.php\n" "$doc";
+            else
+              printf "%s/phpinfo.php already exists!\n" "$doc";
+              \ls -lah "$doc"/phpinfo.php;
+            fi;
+          else
+            printf "Couldn't find %s in /etc/userdatadomains\n" "$dom";
+          fi
+        else
+          printf "%s is not a valid domain\n" "$dom";
+        fi;
+      done;
+    fi;
+  else
+    printf "Unrecognized arg\n";
+  fi;
+};
+
 function lst () {
   if [[ "$#" -eq 0 ]]; then
     local cwd;
