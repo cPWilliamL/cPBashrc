@@ -16,15 +16,34 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 
 #functions
 function lst () {
+  if [[ "$#" -eq 0 ]]; then
+    local cwd;
+    cwd="$(pwd)";
+    for each in ${cwd//\// }; do
+      full+="/$each";
+      \stat -c '%a %U:%G(%u:%g) %F %n' "$full";
+    done;
+    unset full each;
+  fi;
   local i;
   for i in "$@"; do
     for each in ${i//\// }; do
       full+="/$each";
-      \ls -lahd "$full";
+        \stat -c '%a %U:%G(%u:%g) %F %n' "$full";
+        if [[ -f "$full" ]]; then
+        sym="$(readlink -q ${full})";
+        if [[ "${sym:=null}" == null ]]; then
+          \lsattr "$full";
+        else
+          \lsattr "$sym";
+        fi;
+        unset sym;
+      fi;
     done;
+    printf "\n";
     unset full each;
   done;
-}
+};
 
 function cpbak () {
   function _halp() {
