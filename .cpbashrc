@@ -464,7 +464,7 @@ function cpssl () {
             printf "%s " "$_uri: ";
           fi;
           _resolve "${_san[$d]}";
-          _resp="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "${_san[$d]}/$_uri")";
+          _resp="$(curl -sI -A "$_agent" -o /dev/null -m 7 -w "%{http_code}" "${_san[$d]}"/.well-known/pki-validation/"$_uri")";
           _httpd_code "$_resp";
           if [[ "$?" -eq 0 ]]; then
             _pass="$((_pass+1))";
