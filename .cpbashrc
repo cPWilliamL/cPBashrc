@@ -13,6 +13,7 @@ COL_GREEN=$ESC_SEQ"32;01m"
 COL_YELLOW=$ESC_SEQ"33;01m"
 
 #aliases
+alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 
 #functions
 function phpinfo () {
