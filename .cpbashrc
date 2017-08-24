@@ -16,6 +16,12 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 
 #functions
+function genpass () {
+  local pass;
+  pass="$(openssl rand -base64 32)";
+  printf "%s" "${pass//[\+=\/]/}";
+};
+
 function phpinfo () {
   if [[ "$#" -eq 0 ]]; then
     cwd="$(pwd)";
