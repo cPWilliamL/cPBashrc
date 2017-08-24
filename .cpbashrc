@@ -14,6 +14,7 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 
 #aliases
 alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
+[ -f /usr/local/cpanel/3rdparty/bin/sqlite3 ] && alias sqlite='/usr/local/cpanel/3rdparty/bin/sqlite3';
 
 #functions
 function genpass () {
