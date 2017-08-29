@@ -17,6 +17,40 @@ which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFi
 [ -f /usr/local/cpanel/3rdparty/bin/sqlite3 ] && alias sqlite='/usr/local/cpanel/3rdparty/bin/sqlite3';
 
 #functions
+function backuperrors () {
+  for log in /usr/local/cpanel/logs/cpbackup/*; do
+    printf -- "------------------------------\n%s:\n" "$log";
+    while read err; do
+      grep "$err" "$log";
+    done <<EOF
+Unable to get user id
+Unable to load cPanel user data
+You cannot copy the root user
+pkgacct failed to copy daily backup
+Could not use daily backup
+Bailing out
+The REMOTE_PASSWORD variable is missing
+Unable to find domain name
+Exiting with error code
+Could not remove directory
+Hook denied execution of pkgacct
+Could not open
+Could not chmod
+Could not rename
+failed to create the working dir
+Unable to fork
+Unable to waitpid
+Unable to open
+Failure dumping
+Unable to read
+does not appear to be valid XML
+Could not create directory
+mysqldump: Got error
+mysqldump failed
+EOF
+  done;
+}
+
 function genpass () {
   local pass;
   pass="$(openssl rand -base64 32)";
