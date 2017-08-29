@@ -49,6 +49,7 @@ mysqldump: Got error
 mysqldump failed
 EOF
   done;
+  unset log err;
 }
 
 function genpass () {
