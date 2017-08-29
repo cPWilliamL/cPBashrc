@@ -15,6 +15,7 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 #aliases
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 [ -f /usr/local/cpanel/3rdparty/bin/sqlite3 ] && alias sqlite='/usr/local/cpanel/3rdparty/bin/sqlite3';
+alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")';
 
 #functions
 function backuperrors () {
