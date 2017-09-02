@@ -15,6 +15,7 @@ COL_YELLOW=$ESC_SEQ"33;01m"
 #aliases
 alias ll='\ls -lah --color=auto';
 alias ssp='sh <(curl -s "https://raw.githubusercontent.com/CpanelInc/SSP/master/run")';
+alias buggers="curl -sk https://ssp.cpanel.net/ssp | /usr/local/cpanel/3rdparty/bin/perl - --bugreport"
 alias reboot="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 alias shutdown="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
