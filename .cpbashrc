@@ -20,6 +20,153 @@ which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFi
         alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")'; };
 
 #functions
+function upcp () {
+  function halp () {
+    cat <<'EOF' >&2
+This function serves as a wrapper to `/scripts/upcp' to ensure `/etc/cpupdate.conf' is respected.
+It also provides basic upcp/version infomration.
+
+  -a    print all(current version/tier, available tier)
+  -c    check for update
+  -h    print this help
+  -f    follow log with tail
+  -r    check for running update
+  -s    print update summary
+  -S    printf update summary for major updates only
+  -t    print public tiers
+  -u    update cPanel respecting cpupdate.conf
+  -v    print current cPanel version
+
+EOF
+  }
+  function running () {
+    if [ -e /usr/local/cpanel/upgrade_in_progress.txt ]; then
+      printf "%b" "$COL_RED";
+      printf "Found upcp touch file\n";
+      printf "%b" "$COL_RESET";
+      stat /usr/local/cpanel/upgrade_in_progress.txt;
+    else
+      printf "%b" "$COL_GREEN";
+      printf "No upcp touch file\n";
+      printf "%b" "$COL_RESET";
+    fi;
+    if [ -e /run/upcp.pid ]; then
+      printf "%b" "$COL_RED";
+      printf "Found upcp touch file\n";
+      printf "%b" "$COL_RESET";
+      stat /run/upcp.pid;
+    else
+      printf "%b" "$COL_GREEN";
+      printf "No upcp touch file\n";
+      printf "%b" "$COL_RESET";
+    fi
+    if ps aux|grep -q 'root.*cPanel.*Update.*[u]pcp'; then
+      printf "%b" "$COL_RED";
+      printf "Found upcp process:\n";
+      printf "%b" "$COL_RESET";
+      ps aux|grep 'root.*cPanel.*Update.*[u]pcp';
+    else
+      printf "%b" "$COL_GREEN";
+      printf "No upcp process found\n";
+      printf "%b" "$COL_RESET";
+    fi;
+  };
+  OPTIND=1;
+  while getopts "achrsStvuf" opt; do
+    case "$opt" in
+      a)
+        awk -F'=' '/^CPANEL=/{tier=$2}/^RPMUP=/{rpm=$2}/^UPDATES=/{up=$2}END{print tier,rpm,up}' /etc/cpupdate.conf|while read -r tier rpm up; do
+          printf "cPanel: %s\n" "$(cat /usr/local/cpanel/version)";
+          printf "Tier: %s\n" "$tier";
+          printf "cP updates: %s\n" "$up";
+          printf "RPM updates: %s\n\n" "$rpm";
+          printf "Public Tiers...\n";
+          done;
+          whmapi1 get_available_tiers|awk '/current:/{cur=$(NF-1)" "$NF}/edge:/{edg=$(NF-1)" "$NF}/release:/{rel=$(NF-1)" "$NF}/stable:/{stb=$(NF-1)" "$NF}END{printf stb"\n"rel"\n"cur"\n"edg"\n\n"}';
+          running;
+        ;;
+      c)
+        ver="$(cat /usr/local/cpanel/version)";
+        tier="$(grep -oP '(?<=^CPANEL=).+' /etc/cpupdate.conf)";
+        targ="$(whmapi1 get_available_tiers|grep -oP "(?<=$tier: ).+")";
+        up="$(grep -oP '(?<=^UPDATES=).+' /etc/cpupdate.conf)";
+        if [ "$ver" == "$targ" ]; then
+          printf "%b" "$COL_GREEN";
+          printf "cPanel is up-to-date!\n";
+          printf "%b" "$COL_RESET";
+          printf "Current version/tier: %s/%s\nTarget: %s\n" "$ver" "$tier" "$targ";
+        else
+          printf "%b" "$COL_RED";
+          printf "Update Available!!\n";
+          printf "%b" "$COL_RESET";
+          printf "Current version/tier: %s/%s\nTarget: %s\n" "$ver" "$tier" "$targ";
+        fi;
+        ;;
+      h)
+        halp;
+        ;;
+      r)
+        running;
+        ;;
+      s)
+        awk '{if ($(NF-2)!=$NF)print}' /var/cpanel/updatelogs/summary.log;
+        ;;
+      S)
+        awk -F'.' '{if ($2!=$5) print}' /var/cpanel/updatelogs/summary.log;
+        ;;
+      t)
+        whmapi1 get_available_tiers|awk '/current:/{cur=$(NF-1)" "$NF}/edge:/{edg=$(NF-1)" "$NF}/release:/{rel=$(NF-1)" "$NF}/stable:/{stb=$(NF-1)" "$NF}END{printf stb"\n"rel"\n"cur"\n"edg"\n"}';
+        ;;
+      f)
+        follow=1;
+        ;;
+      u)
+        ver="$(cat /usr/local/cpanel/version)";
+        tier="$(grep -oP '(?<=^CPANEL=).+' /etc/cpupdate.conf)";
+        targ="$(whmapi1 get_available_tiers|grep -oP "(?<=$tier: ).+")";
+        up="$(grep -oP '(?<=^UPDATES=).+' /etc/cpupdate.conf)";
+        if [ "$ver" == "$targ" ]; then
+          printf "Current version/tier: %s/%s\nTarget: %s\n" "$ver" "$tier" "$targ";
+          if [ "$follow" -eq 1 ]; then
+              /scripts/upcp --bg 2>&1|grep -oP '/var/cpanel/updatelogs/update\.[0-9]+\.log'|xargs tail -f;
+            else
+              /scripts/upcp --bg;
+          fi;
+        elif [ "$up" == manual ]; then
+          printf "%b" "$COL_RED";
+          printf "[WARN] Updates set to manual!!\n";
+          printf "[WARN] Update will result in version change!!\n"
+          printf "%b" "$COL_RESET";
+          printf "Current version/tier: %s/%s\nTarget: %s\n" "$ver" "$tier" "$targ";
+          printf "Are you sure you would like to continue?: [y/n]\n";
+          read -r ans;
+          if [[ "$ans" =~ [yY] ]]; then
+            if [ "$follow" -eq 1 ]; then
+              /scripts/upcp --bg 2>&1|grep -oP '/var/cpanel/updatelogs/update\.[0-9]+\.log'|xargs tail -f;
+            else
+              /scripts/upcp --bg;
+            fi;
+          else
+            printf "Bailing out...\n";
+          fi;
+        else
+          if [ "$follow" -eq 1 ]; then
+            /scripts/upcp --bg 2>&1|grep -oP '/var/cpanel/updatelogs/update\.[0-9]+\.log'|xargs tail -f;
+          else
+            /scripts/upcp --bg;
+          fi;
+        fi;
+        ;;
+      v)
+        cat /usr/local/cpanel/version;
+        ;;
+      \?)
+        halp;
+    esac;
+  done;
+  unset halp opt follow ver tier targ up ans OPTIND running;
+}
+
 function backuperrors () {
   for log in /usr/local/cpanel/logs/cpbackup/*; do
     printf -- "------------------------------\n%s:\n" "$log";
