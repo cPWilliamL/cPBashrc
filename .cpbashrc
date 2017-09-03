@@ -96,7 +96,7 @@ EOF
         tier="$(grep -oP '(?<=^CPANEL=).+' /etc/cpupdate.conf)";
         targ="$(whmapi1 get_available_tiers|grep -oP "(?<=$tier: ).+")";
         up="$(grep -oP '(?<=^UPDATES=).+' /etc/cpupdate.conf)";
-        if [ "$ver" == "$targ" ]; then
+        if [[ "$ver" == "$targ" ]]; then
           printf "%b" "$COL_GREEN";
           printf "cPanel is up-to-date!\n";
           printf "%b" "$COL_RESET";
@@ -131,14 +131,14 @@ EOF
         tier="$(grep -oP '(?<=^CPANEL=).+' /etc/cpupdate.conf)";
         targ="$(whmapi1 get_available_tiers|grep -oP "(?<=$tier: ).+")";
         up="$(grep -oP '(?<=^UPDATES=).+' /etc/cpupdate.conf)";
-        if [ "$ver" == "$targ" ]; then
+        if [[ "$ver" == "$targ" ]]; then
           printf "Current version/tier: %s/%s\nTarget: %s\n" "$ver" "$tier" "$targ";
-          if [ "$follow" -eq 1 ]; then
+          if [[ "$follow" -eq 1 ]]; then
               /scripts/upcp --bg 2>&1|grep -oP '/var/cpanel/updatelogs/update\.[0-9]+\.log'|xargs tail -f;
             else
               /scripts/upcp --bg;
           fi;
-        elif [ "$up" == manual ]; then
+        elif [[ "$up" == manual ]]; then
           printf "%b" "$COL_RED";
           printf "[WARN] Updates set to manual!!\n";
           printf "[WARN] Update will result in version change!!\n"
@@ -147,7 +147,7 @@ EOF
           printf "Are you sure you would like to continue?: [y/n]\n";
           read -r ans;
           if [[ "$ans" =~ [yY] ]]; then
-            if [ "$follow" -eq 1 ]; then
+            if [[ "$follow" -eq 1 ]]; then
               /scripts/upcp --bg 2>&1|grep -oP '/var/cpanel/updatelogs/update\.[0-9]+\.log'|xargs tail -f;
             else
               /scripts/upcp --bg;
@@ -156,7 +156,7 @@ EOF
             printf "Bailing out...\n";
           fi;
         else
-          if [ "$follow" -eq 1 ]; then
+          if [[ "$follow" -eq 1 ]]; then
             /scripts/upcp --bg 2>&1|grep -oP '/var/cpanel/updatelogs/update\.[0-9]+\.log'|xargs tail -f;
           else
             /scripts/upcp --bg;
