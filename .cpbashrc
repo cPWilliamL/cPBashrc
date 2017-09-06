@@ -23,7 +23,8 @@ which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFi
 [ -f /usr/local/cpanel/3rdparty/bin/sqlite3 ] && alias sqlite='/usr/local/cpanel/3rdparty/bin/sqlite3';
 [ -f /usr/local/cpanel/3rdparty/bin/perl ] && { \
         alias acctinfo='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/acctinfo/master/acctinfo")';
-        alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")'; };
+        alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")';
+        alias cplice='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/cp_license_troubleshooter/master/cplicensets")'; };
 
 #functions
 function upcp () {
