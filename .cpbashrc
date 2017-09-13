@@ -25,6 +25,8 @@ which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFi
         alias acctinfo='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/acctinfo/master/acctinfo")';
         alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")';
         alias cplice='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/cp_license_troubleshooter/master/cplicensets")'; };
+[ -f /usr/local/cpanel/3rdparty/bin/perl ] && [ -f /var/cpanel/eximstats_db.sqlite3 ] && \
+        alias eximstatsvac="/usr/local/cpanel/3rdparty/bin/perl -MCpanel::EximStats::DB::Sqlite -e 'Cpanel::EximStats::DB::Sqlite->dbconnect()->do(\"VACUUM;\");'";
 
 #functions
 function upcp () {
