@@ -21,6 +21,7 @@ alias shutdown="printf 'Sorry, cPanel Support is not permitted to reboot custome
 alias ofac="grep -E '\.(ir|mm|cu|sd|sy):' /etc/userdomains";
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 [ -f /usr/local/cpanel/3rdparty/bin/sqlite3 ] && alias sqlite='/usr/local/cpanel/3rdparty/bin/sqlite3';
+[ -f /usr/local/cpanel/3rdparty/perl/*/bin/ack ] && alias ack='/usr/local/cpanel/3rdparty/perl/*/bin/ack';
 [ -f /usr/local/cpanel/3rdparty/bin/perl ] && { \
         alias acctinfo='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/acctinfo/master/acctinfo")';
         alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")';
