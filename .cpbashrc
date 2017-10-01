@@ -28,6 +28,8 @@ which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFi
         alias cplice='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/cp_license_troubleshooter/master/cplicensets")'; };
 [ -f /usr/local/cpanel/3rdparty/bin/perl ] && [ -f /var/cpanel/eximstats_db.sqlite3 ] && \
         alias eximstatsvac="/usr/local/cpanel/3rdparty/bin/perl -MCpanel::EximStats::DB::Sqlite -e 'Cpanel::EximStats::DB::Sqlite->dbconnect()->do(\"VACUUM;\");'";
+[ ! -f /etc/cpanel/ea4/is_ea4 ] && [ -f /usr/local/apache/bin/apachectl ] && \
+        alias apachectl='/usr/local/apache/bin/apachectl';
 
 #functions
 function upcp () {
