@@ -350,7 +350,7 @@ function cpbak () {
           printf "\nPlease select a backup: ";
           read _ans;
           printf "\n";
-          diff -u "${_list[$i]}" "${_files[$_ans]}";
+          diff -u "${_files[$_ans]}" "${_list[$i]}";
           printf "\n";
         fi;
         unset _files;
