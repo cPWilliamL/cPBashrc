@@ -22,9 +22,9 @@ alias ofac="grep -E '\.(ir|mm|cu|sd|sy):' /etc/userdomains";
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 [ -f /opt/cpanel/libcurl/bin/curl ] && alias eacurl='/opt/cpanel/libcurl/bin/curl';
 if which eacurl >/dev/null 2>&1; then
-        alias ttfb="curl -o /dev/null -sL -H 'Cache-Control: no-cache' -w 'Connect: %{time_connect} TTFB: %{time_starttransfer} Total time: %{time_total} \n'";
-else
         alias ttfb="eacurl -o /dev/null -sL -H 'Cache-Control: no-cache' -w 'Connect: %{time_connect} TTFB: %{time_starttransfer} Total time: %{time_total} \n'";
+else
+        alias ttfb="curl -o /dev/null -sL -H 'Cache-Control: no-cache' -w 'Connect: %{time_connect} TTFB: %{time_starttransfer} Total time: %{time_total} \n'";
 fi;
 [ -f /usr/local/cpanel/3rdparty/bin/sqlite3 ] && alias sqlite='/usr/local/cpanel/3rdparty/bin/sqlite3';
 [ -f /usr/local/cpanel/3rdparty/perl/*/bin/ack ] && alias ack='/usr/local/cpanel/3rdparty/perl/*/bin/ack';
