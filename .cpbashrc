@@ -19,7 +19,7 @@ alias buggers="curl -sk https://ssp.cpanel.net/ssp | /usr/local/cpanel/3rdparty/
 alias reboot="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 alias shutdown="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 alias ofac="grep -E '\.(ir|mm|cu|sd|sy):' /etc/userdomains";
-alias abortssh="ps aux|awk '/[s]shd: unknown/{system("kill -6 "$2)}'";
+alias abortssh="ps aux|awk '/[s]shd: unknown/{system(\"kill -6 \"$2)}'";
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 [ -f /opt/cpanel/libcurl/bin/curl ] && alias eacurl='/opt/cpanel/libcurl/bin/curl';
 if which eacurl >/dev/null 2>&1; then
