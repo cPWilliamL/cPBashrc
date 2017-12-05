@@ -468,7 +468,7 @@ function cpfpm () {
 function ipinfo () {
   local i;
   for i in "$@"; do
-    curl -s ipinfo.io/"$i"|sed -E '/^[{}]/d; s/([,"]*|^[ ]+)//g';
+    curl -s ipinfo.io/"$i"|sed -r '/^[{}]/d; s/([,"]*|^[ ]+)//g';
   done;
 };
 
