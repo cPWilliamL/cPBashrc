@@ -18,6 +18,7 @@ alias ssp='sh <(curl -s "https://raw.githubusercontent.com/CpanelInc/SSP/master/
 alias buggers="curl -sk https://ssp.cpanel.net/ssp | /usr/local/cpanel/3rdparty/bin/perl - --bugreport"
 alias reboot="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 alias shutdown="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
+alias yum='/bin/yum --assumeno';
 alias ofac="grep -E '\.(ir|mm|cu|sd|sy):' /etc/userdomains";
 alias abortssh="ps aux|awk '/[s]shd: unknown/{system(\"kill -6 \"\$2)}'";
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
