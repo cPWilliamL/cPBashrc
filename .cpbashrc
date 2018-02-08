@@ -34,7 +34,7 @@ fi;
 [ -f /usr/local/cpanel/3rdparty/perl/*/bin/ack ] && alias ack='/usr/local/cpanel/3rdparty/perl/*/bin/ack';
 [ -f /usr/local/cpanel/3rdparty/bin/perl ] && { \
         alias cpperl='/usr/local/cpanel/3rdparty/bin/perl';
-        alias acctinfo='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/acctinfo/master/acctinfo")';
+        alias acctinfo='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/CpanelInc/tech-acctinfo/master/acctinfo")';
         alias chkservderrors='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelTechs/TechScripts/master/chkservd_errors.pl")';
         alias cplice='/usr/local/cpanel/3rdparty/bin/perl <(curl -s "https://raw.githubusercontent.com/cPanelPeter/cp_license_troubleshooter/master/cplicensets")'; };
 [ -f /usr/local/cpanel/3rdparty/bin/perl ] && [ -f /var/cpanel/eximstats_db.sqlite3 ] && \
