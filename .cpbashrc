@@ -43,6 +43,50 @@ fi;
         alias apachectl='/usr/local/apache/bin/apachectl';
 
 #functions
+function tweaksettings () {
+  if [ "$#" -eq 0 ]; then
+    local tweak val;
+    awk -F'=' '/=/{print$1,$2}' /var/cpanel/cpanel.config | \
+      while read tweak val; do
+        printf "${COL_CYAN}Tweak:${COL_RESET} %s ${COL_CYAN}Value:${COL_RESET} %s\n" "$tweak" "$val";
+        awk -F':' -v var="$tweak" '$1==var{f=1}/^$/{f=0}f && /label/{gsub(/\047/,"");$1="";print $0}f && /help/{gsub(/\047/,"");$1="";print $0}' /usr/local/cpanel/whostmgr/docroot/themes/x/tweaksettings/Main.yaml;
+        printf '\n';
+      done;
+  elif [ "$#" -eq 1 ] && [ "$1" == "-h" -o "$1" == "--help" ]; then
+    cat <<'EOF' >&2
+Usage: tweaksettings [-p|--pager] [-t|--tweak] [-h|--help]
+This function provides WHM name/description and current values
+By default, all values are listed
+
+  -h|--help          print help
+  -t|--tweak $tweak  print for given tweak name
+  -p|--pager         print all values to pager
+EOF
+  elif [ "$#" -eq 1 ] && [ "$1" == "-p" -o "$1" == "--pager" ]; then
+      local tweak val;
+      awk -F'=' '/=/{print$1,$2}' /var/cpanel/cpanel.config | \
+      while read tweak val; do
+        printf "${COL_CYAN}Tweak:${COL_RESET} %s ${COL_CYAN}Value:${COL_RESET} %s\n" "$tweak" "$val";
+        awk -F':' -v var="$tweak" '$1==var{f=1}/^$/{f=0}f && /label/{gsub(/\047/,"");$1="";print $0}f && /help/{gsub(/\047/,"");$1="";print $0}' /usr/local/cpanel/whostmgr/docroot/themes/x/tweaksettings/Main.yaml;
+        printf '\n';
+      done | less -Ri;
+  elif [ "$#" -ge 2 ] && [ "$1" == "-t" -o "$1" == "--tweak" ]; then
+    local tweak arg argar i;
+    for arg in $@; do
+      argar+=($arg);
+    done;
+    for ((i=1; i<${#argar[@]}; i++)); do
+      if grep -q "^${argar[$i]}:" /usr/local/cpanel/whostmgr/docroot/themes/x/tweaksettings/Main.yaml; then
+        val="$(awk -F'=' -v var="${argar[$i]}" '$1==var{print$2}' /var/cpanel/cpanel.config)";
+        printf "${COL_CYAN}Tweak:${COL_RESET} %s ${COL_CYAN}Value:${COL_RESET} %s\n" "${argar[i]}" "$val";
+        awk -F':' -v var="${argar[$i]}" '$1==var{f=1}/^$/{f=0}f && /label/{gsub(/\047/,"");$1="";print $0}f && /help/{gsub(/\047/,"");$1="";printf $0"\n"}' /usr/local/cpanel/whostmgr/docroot/themes/x/tweaksettings/Main.yaml
+      else
+        printf "${COL_RED}Tweak not found:${COL_RESET} %s\n" "$i";
+      fi;
+    done;
+  fi;
+}
+
 function upcp () {
   function halp () {
     cat <<'EOF' >&2
