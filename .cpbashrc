@@ -11,6 +11,8 @@ COL_RESET=$ESC_SEQ"39;49;00m"
 COL_RED=$ESC_SEQ"31;01m"
 COL_GREEN=$ESC_SEQ"32;01m"
 COL_YELLOW=$ESC_SEQ"33;01m"
+COL_BLUE=$ESC_SEQ"0;34m"
+COL_CYAN=$ESC_SEQ"0;36m"
 
 #aliases
 alias ll='\ls -lah --color=auto';
