@@ -24,7 +24,7 @@ alias shutdown="printf 'Sorry, cPanel Support is not permitted to reboot custome
 alias yum='/bin/yum --assumeno';
 alias ofac="grep -E '\.(ir|mm|cu|sd|sy):' /etc/userdomains";
 alias abortssh="ps aux|awk '/[s]shd: unknown/{system(\"kill -6 \"\$2)}'";
-alias mapip="ip addr|awk -F\"[ \t/]+\" '/global/{printf \"internal \"\$3\" - external \";system(\"wget -O - -q --tries=1 --timeout=10 --bind-address=\"$3\" http://cpanel.net/myip || echo NO REPLY\")}'";
+alias mapip="ip addr|awk -F\"[ \t/]+\" '/global/{printf \"internal \"\$3\" - external \";system(\"wget -O - -q --tries=1 --timeout=10 --bind-address=\"\$3\" http://cpanel.net/myip || echo NO REPLY\")}'";
 which vim >/dev/null 2>&1 && alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
 [ -f /opt/cpanel/libcurl/bin/curl ] && alias eacurl='/opt/cpanel/libcurl/bin/curl';
 if which eacurl >/dev/null 2>&1; then
