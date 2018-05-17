@@ -242,6 +242,7 @@ function backuperrors () {
     while read err; do
       grep "$err" "$log";
     done <<EOF
+Failed to back up account
 Unable to get user id
 Unable to load cPanel user data
 You cannot copy the root user
