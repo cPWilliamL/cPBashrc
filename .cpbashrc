@@ -267,6 +267,7 @@ does not appear to be valid XML
 Could not create directory
 mysqldump: Got error
 mysqldump failed
+Failed to generate backup metadata
 EOF
   done;
   unset log err;
