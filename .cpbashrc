@@ -456,7 +456,7 @@ function cpbak () {
 
 function cplistips () {
   test -f /usr/local/cpanel/bin/whmapi1 || { >&2 printf "whmapi1 not found\n"; return; };
-  /usr/local/cpanel/bin/whmapi1 listips|grep -oP "(?<=public_ip: )[^ ]+";
+  /usr/local/cpanel/bin/whmapi1 listips|grep -oP "(?<=public_ip: )[0-9\.]+";
 };
 
 function cphostname () {
