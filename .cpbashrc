@@ -279,6 +279,7 @@ Unable to backup MySQL directory
 Failed to chmod
 Error pruning backup metadata
 Could not determine file system
+Scheduling a rebuild
 EOF
   done;
   unset log err;
