@@ -240,7 +240,7 @@ function backuperrors () {
   for log in /usr/local/cpanel/logs/cpbackup/*; do
     printf -- "------------------------------\n%s:\n" "$log";
     while read err; do
-      grep "$err" "$log";
+      grep -i "$err" "$log";
     done <<EOF
 Failed to back up account
 Unable to get user id
@@ -268,6 +268,17 @@ Could not create directory
 mysqldump: Got error
 mysqldump failed
 Failed to generate backup metadata
+Unable to add remote.*file pruning process to queue
+Unable add.*unmount process to queue
+Some of the metadata database.*appear corrupt
+Unable add error report email to queue
+Error setting backup status
+Could not queue.*for transport to
+Backup failed
+Unable to backup MySQL directory
+Failed to chmod
+Error pruning backup metadata
+Could not determine file system
 EOF
   done;
   unset log err;
