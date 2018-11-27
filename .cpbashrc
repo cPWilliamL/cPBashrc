@@ -569,3 +569,9 @@ function hosted () {
     done;
   done;
 };
+
+function cptransfercodes {
+  /usr/local/cpanel/3rdparty/bin/perl -MWhostmgr::Transfers::SessionBase \
+    -e 'our %codes = %Whostmgr::Transfers::SessionBase::SESSION_STATES;' \
+    -e 'foreach (sort keys %codes){print "$_ $codes{$_}\n"};'
+}
