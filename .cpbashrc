@@ -19,6 +19,7 @@ alias ll='\ls -lah --color=auto';
 alias ssp='sh <(curl -s "https://raw.githubusercontent.com/CpanelInc/SSP/master/run")';
 alias buggers="curl -sk https://ssp.cpanel.net/ssp | /usr/local/cpanel/3rdparty/bin/perl - --bugreport"
 alias preinstallcheck="bash <(curl -sL 'https://go.cpanel.net/preinstallcheck')";
+alias cpchange='[[ "$(cat /usr/local/cpanel/version)" =~ ([0-9]+)\.([0-9]+) ]] && curl -sL atom.cpanel.net/changelog/cpanel-changelog-"${BASH_REMATCH[2]}".atom|lynx -stdin -dump|less'
 alias reboot="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 alias shutdown="printf 'Sorry, cPanel Support is not permitted to reboot customers servers\n'";
 alias yum='/bin/yum --assumeno';
