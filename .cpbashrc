@@ -50,6 +50,12 @@ fi;
         alias apachectl='/usr/local/apache/bin/apachectl';
 
 #functions
+function mstrings() {
+    ( strings -a -td "$@" | sed 's/^\(\s*[0-9][0-9]*\) \(.*\)$/\1 A \2/'; \
+      strings -a -td -el "$@" | sed 's/^\(\s*[0-9][0-9]*\) \(.*\)$/\1 W \2/' \
+    ) | sort -n
+}
+
 function tweaksettings () {
   if [ "$#" -eq 0 ]; then
     local tweak val;
