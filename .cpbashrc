@@ -29,7 +29,7 @@ alias abortssh="ps aux|awk '/[s]shd: unknown/{system(\"kill -6 \"\$2)}'";
 alias mapip="ip addr|awk -F\"[ \t/]+\" '/global/{printf \"internal \"\$3\" - external \";system(\"wget -O - -q --tries=1 --timeout=10 --bind-address=\"\$3\" https://cpanel.net/myip || echo NO REPLY\")}'";
 if which vim >/dev/null 2>&1; then
         alias vless='vim -R --cmd "autocmd BufRead,BufNewFile *.strace set filetype=strace"';
-        alias vim="vim -c 'set linebreak' -c 'syntax enable' -c 'set cursorline' -c 'set number' -c 'set background=dark'";
+        alias vim="vim -c 'set modelines=0' -c 'set nomodeline' -c 'set linebreak' -c 'syntax enable' -c 'set cursorline' -c 'set number' -c 'set background=dark'";
 fi;
 [ -f /opt/cpanel/libcurl/bin/curl ] && alias eacurl='/opt/cpanel/libcurl/bin/curl';
 if which eacurl >/dev/null 2>&1; then
