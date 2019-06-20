@@ -56,6 +56,12 @@ function mstrings() {
     ) | sort -n
 }
 
+function sumstat() {
+    for i in $@; do
+        stat $i; md5sum $_; sha256sum $_; sha512sum $_;
+    done;
+}    
+
 function tweaksettings () {
   if [ "$#" -eq 0 ]; then
     local tweak val;
